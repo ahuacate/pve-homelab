@@ -312,7 +312,7 @@ Now follow the onscreen prompts and type your input as follows:
 | **Nextcloud Password**
 | Enter | `insert Nextcloud password in the box` | *Add a complex password and record it i.e oTL&9qe/9Y&RV*
 | **Nextcloud Domain**
-| Enter the domain to serve Nextcloud | `*` | *Enter a asterix for all. Not required at this stage*
+| Enter the domain to serve Nextcloud | `*` | *Enter a asterix for now. You will configure domain access later*
 | **Initialize Hub Services**
 | Select | `<Skip>` | *Not required*
 | **System Notifications and Critical Security Alerts**
@@ -326,43 +326,37 @@ Your Nextcloud console will commence downloading security updates and complete t
 
 Click/Select `<Quit>`
 
+### 3.04 Configure Nextcloud home- Turnkey Debian 9
 
+
+### 3.05 Setup Nextcloud
+Browse to http://192.168.70.121 to start using Nextcloud. You may receive a Firefox warning **Warning: Potential Security Risk Ahead** which you are to ignore. Simply click `Advanced` then `Accept the Risk and Continue` to proceed to your Nextcloud login.
+
+Your Nextcloud user is `admin`and  password is your `Nextcloud Password` which you set Step 3.04.
+
+
+# Set Nextcloud Home folder to NAS
+sed -i "/'datadirectory' => '\/var\/www\/nextcloud\/data',/c\  'datadirectory' => '\/mnt\/nextcloud\/data'," /var/www/nextcloud/config/config.php 
 
 ---
 nano /var/www/nextcloud/config/config.php
 sudo nextcloud.occ config:system:set trusted_domains 1 --value=192.168.1.*
 
-<?php
-$CONFIG = array (
-  'passwordsalt' => '56e122543f3aa183ea12583e3b88aa0d',
-  'secret' => '6ca4a03b07ac120fe34d4ed586d9b4e5b543e1b62eaa40757fcbfaba3c03bf21791fb3bff94b08299aa4eb407743d7d6',
-  'trusted_domains' => 
-  array (
-    0 => 'localhost',
-    1 => '*',
-  ),
   'datadirectory' => '/var/www/nextcloud/data',
-  'dbtype' => 'mysql',
-  'version' => '16.0.1.1',
-  'overwrite.cli.url' => 'http://localhost',
-  'dbname' => 'nextcloud',
-  'dbhost' => 'localhost',
-  'dbport' => '',
-  'dbtableprefix' => 'oc_',
-  'mysql.utf8mb4' => true,
-  'dbuser' => 'nextcloud',
-  'dbpassword' => '2a66e17d8497543144154d325772bdc3',
-  'installed' => true,
-  'memcache.local' => '\\OC\\Memcache\\Redis',
-  'redis' => 
-  array (
-    'host' => '/var/run/redis/redis.sock',
-    'port' => 0,
-    'timeout' => 0.0,
-  ),
-  'filelocking.enabled' => true,
-  'memcache.locking' => '\\OC\\Memcache\\Redis',
-  'instanceid' => '4c69191b6cbfa',
-  'updater.secret' => '$2y$10$w8o1iEVTxqSuOvliGBuTjOCtR5FGq8zH1qN9Xn8u7W/mE9COrKrCC',
-  'maintenance' => false,
-);
+  
+apt-get update
+apt-get install sudo
+1. sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
+2. mkdir -p /mnt/nextcloud/data
+3. cp -a /var/www/nextcloud/data. /mnt/nextcloud/data
+4. sudo chown -R www-data:www-data /mnt/nextcloud/data
+5. nano /path/to/nextcloud/config/config.php
+       'datadirectory' => '/new/path/to/data',
+6. mysqldump -u<rootuser> -p > /path/to/dbdump/dump.sql
+7. Adjust "oc_storages"database table to reflect the new data folder location:
+      mysql -u<rootuser> -p
+      //enter mysql root password, then within mysql console:
+      use <nextclouddb>;
+      update oc_storages set id='local::/new/path/to/data/' where id='local::/path/to/data/'; //take care about backslash at the end of path!!
+      quit;
+8. sudo -u www-data php /path/to/nextcloud/occ maintenance:mode --off
