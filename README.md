@@ -320,7 +320,11 @@ Now follow the onscreen prompts and type your input as follows:
 | **Security Updates**
 | Security updates? | `<Install>` |
 
-Your Nextcloud console will commence downloading security updates and complete the Nextcloud installation. On completion a dialoque box will appear listing your Nextcloud appliance services. Click/Select `<Quit>`
+Your Nextcloud console will commence downloading security updates and complete the Nextcloud installation. On completion a dialoque box will appear listing your Nextcloud appliance services.
+
+![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-lxc-homelab/master/images/appliance.png)
+
+Click/Select `<Quit>`
 
 
 
