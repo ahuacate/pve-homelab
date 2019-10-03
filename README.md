@@ -338,9 +338,9 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 
 ### 4.04 Unprivileged container mapping - Ubuntu 18.04
 
-~~To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.
+~~To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.~~
 
-~~Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
+~~Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:~~
 ```
 echo -e "lxc.idmap: u 1 100000 32
 lxc.idmap: g 1 100000 32
