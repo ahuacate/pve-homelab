@@ -315,12 +315,12 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nextcloud --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.121/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-nextcloud,mp=/mnt/nextcloud --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nextcloud --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.121/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-nextcloud,mp=/mnt/nextcloud --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 ```
 
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nextcloud --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.121/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nextcloud --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.121/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
 ### 4.03 Setup Nextcloud Mount Points - Ubuntu 18.04
@@ -338,9 +338,9 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 
 ### 4.04 Unprivileged container mapping - Ubuntu 18.04
 
-To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.
+~~To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.
 
-Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
+~~Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
 ```
 echo -e "lxc.idmap: u 1 100000 32
 lxc.idmap: g 1 100000 32
