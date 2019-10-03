@@ -260,7 +260,7 @@ First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt 
 
 Or use a Proxmox typhoon-01 CLI >_ Shell and type the following:
 ```
-wget  http://mirror.turnkeylinux.org/turnkeylinux/images/proxmox/debian-9-turnkey-nextcloud_15.2-1_amd64.tar.gz -P /var/lib/vz/template/cache && gz
+wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
 ### 4.02 Create the Turnkey Nextcloud LXC - Ubuntu 18.04
@@ -272,14 +272,14 @@ Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the 
 | Node | `typhoon-01` |
 | CT ID |`121`|
 | Hostname |`nextcloud`|
-| Unprivileged container | `☑` |
+| Unprivileged container | `☐` |
 | Resource Pool | Leave Blank
 | Password | Enter your pasword
 | Password | Enter your pasword
 | SSH Public key | Add one if you want to
 | **Template**
 | Storage | `local` |
-| Template |`debian-9-turnkey-nextcloud_15.2-1_amd64.tar.gz`|
+| Template |`ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz`|
 | **Root Disk**
 | Storage |`typhoon-share`|
 | Disk Size |`8 GiB`|
@@ -294,18 +294,18 @@ Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the 
 | Name | `eth0`
 | Mac Address | `auto`
 | Bridge | `vmbr0`
-| VLAN Tag | `70`
+| VLAN Tag | `80`
 | Rate limit (MN/s) | Leave Default (unlimited)
 | Firewall | `☑`
 | IPv4 | `☑  Static`
-| IPv4/CIDR |`192.168.70.121/24`|
-| Gateway (IPv4) |`192.168.70.5`|
+| IPv4/CIDR |`192.168.80.121/24`|
+| Gateway (IPv4) |`192.168.80.5`|
 | IPv6 | Leave Blank
 | IPv4/CIDR | Leave Blank |
 | Gateway (IPv6) | Leave Blank |
 | **DNS**
-| DNS domain | `192.168.70.5`
-| DNS servers | `192.168.70.5`
+| DNS domain | `192.168.80.5`
+| DNS servers | `192.168.80.5`
 | **Confirm**
 | Start after Created | `☐`
 
@@ -338,10 +338,10 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 
 ### 4.04 Unprivileged container mapping - Ubuntu 18.04
 
+Underdevelopment so ignore - for unprivileged CT.
 ~~To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.~~
 
-~~Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:~~
-```
+~~Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
 echo -e "lxc.idmap: u 1 100000 32
 lxc.idmap: g 1 100000 32
 lxc.idmap: u 0 0 1
@@ -355,17 +355,80 @@ grep -qxF 'root:33:1' /etc/subuid || echo 'root:33:1' >> /etc/subuid &&
 grep -qxF 'root:33:1' /etc/subgid || echo 'root:33:1' >> /etc/subgid &&
 grep -qxF 'root:0:1' /etc/subuid || echo 'root:0:1' >> /etc/subuid &&
 grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid 
+~~
+
+###
+sudo mkdir -p /mnt/nextcloud/data &&
+sudo chown -R www-data:www-data /mnt/nextcloud/data &&
+sudo chmod -R 755 /mnt/nextcloud/data
+
+
+### 4.05 Install Nextcloud SW prerequisites - Ubuntu 18.04
+First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type your root login and password.
+
+The first step, to set up Nextcloud you must have a running LAMP server on your Ubuntu 18.04 LXC system. The following commands will install it. Type the following:
+
+```
+# Apt-get update
+sudo apt-get update -y &&
+# Install unzip
+sudo apt-get install -y unzip &&
+# Install PHP
+sudo apt-get install -y php php-gd php-curl php-zip php-xml php-mbstring &&
+# Install Apache2
+sudo apt-get install -y apache2 libapache2-mod-php &&
+# Install MySQL database server.
+sudo apt-get install -y mysql-server php-mysql
+```
+You will be prompted during the installation whether to `Restart services during package upgrades without asking?`. Select `<Yes>`.
+
+### 4.06 Download the latest Nextcloud Archive - - Ubuntu 18.04
+Here we download and install the latest Nextcloud version. Type the following:
+
+```
+# Download Nextcloud
+wget https://download.nextcloud.com/server/releases/latest.zip -P /tmp
+# Extract Nextcloud zip
+unzip -o /tmp/latest.zip -d /var/www/html
+# Set appropriate permissions
+sudo chown -R www-data:www-data /var/www/html/nextcloud
+sudo chmod -R 755 /var/www/html/nextcloud
+# Remove archive
+sudo rm -f /tmp/nextcloud-17.0.0.zip
 ```
 
-### 4.04 Install Nextcloud - Ubuntu 18.04
-First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type your root login and password. The Turnkey installation script will autostart requiring user input. Its best to create and record two different complex passwords (i.e oTL&9qe/9Y&RV style) ready for the Nextcloud installation.
+### 4.07 Create Nextclouds MySQL Database
+The installation script requires user input to enter passwords. Its best to create and record two different complex passwords (i.e oTL&9qe/9Y&RV style) ready for the Nextcloud installation.
 
 | Nexcloud Passwords | Value | Notes
 | :---  | :---: | :---
 | MySQL Password | `complex password` | *This password is for your Nextcloud SQL - make a record of it*
 | Nextcloud Password | `complex password` | *This password is for your Nextcloud admin account - make a record of it*
+
+Next you need to create the MySQL database and user account for configuring Nextcloud. Use the following set of commands to log into MySQL server and create a new database and user. 
+
+```
+mysql -u root -p
+# You will be prompted to enter a password.
+# Enter password:
+```
+After creating the MySQL password the terminal will present you with a `mysql>` prompt.  Only type commands at the `mysql>` prompt (i.e "CREATE DATABASE nextcloud;" **NOT** "mysql> CREATE DATABASE nextcloud;"):
+
+```
+mysql> CREATE DATABASE nextcloud;
+mysql> GRANT ALL ON nextcloud.* to 'nextcloud'@'localhost' IDENTIFIED BY '_Pa$$w0rd_';
+mysql> FLUSH PRIVILEGES;
+mysql> quit
+```
+Now type `reboot` to restart the LXC before proceeding to the next step.
+
+### 4.08 Run Nextcloud Web Installer
+Access the Nextcloud directory in the web browser as below. Change localhost to your server IP address or domain name.
+
+http://192.168.80.121/nextcloud/
+
+Enter new admin credentials to create an admin account and provide the location of the data folder.
+
 
 Now follow the onscreen prompts and type your input as follows:
 
@@ -493,10 +556,17 @@ Step 2 – Download Nextcloud Archive
 
 After successfully configuring lamp server on your system, Let’s download latest Nextcloud from its official website.
 
-cd /tmp &&
-wget https://download.nextcloud.com/server/releases/nextcloud-17.0.0.zip
+# Download Nextcloud
+wget https://download.nextcloud.com/server/releases/nextcloud-17.0.0.zip -P /tmp
+# Extract Nextcloud zip
+unzip -o /tmp/nextcloud-17.0.0.zip -d /var/www/html
+# Set appropriate permissions
+sudo chown -R www-data:www-data /var/www/html/nextcloud
+sudo chmod -R 755 /var/www/html/nextcloud
+# Remove archive
+sudo rm -f /tmp/nextcloud-17.0.0.zip
 
-
+nextcloud
 Now extract downloaded archive under website document root and set up appropriate permissions on files and directories.
 
 cd /var/www/html &&
