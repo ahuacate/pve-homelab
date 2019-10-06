@@ -252,7 +252,7 @@ But make sure when you are restoring the backup you Have closed the previous Uni
 ## 4.00 NextCloud - Ubuntu 18.04
 Nextcloud helps store your files, folders, contacts, photo galleries, calendars and more on a server of your choosing. Access that folder from your mobile device, your desktop, or a web browser. Access your data wherever you are, when you need it.
 
-Here we going to Turnkey Linux NextCloud prebuilt container.
+But there's a issue. Nextcloud data directory, the folder where each Nextcloud user account stores data (basically user home), cannot be moved to the NAS due to UID GID issues with NFS. 
 
 ### 4.01 Download the NextCloud LXC template - Ubuntu 18.04
 
@@ -263,7 +263,7 @@ Or use a Proxmox typhoon-01 CLI >_ Shell and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 4.02 Create the Turnkey Nextcloud LXC - Ubuntu 18.04
+### 4.02 Create the Nextcloud LXC - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -320,7 +320,7 @@ pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nextcloud --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.121/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
+pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nextcloud --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.121/24,type=veth --ostype debian --rootfs typhoon-share:10 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
 ### 4.03 Setup Nextcloud Mount Points - Ubuntu 18.04
@@ -331,7 +331,7 @@ Please note your Proxmox Nextcloud LXC MUST BE in the shutdown state before proc
 To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 pct set 121 -mp0 /mnt/pve/cyclone-01-nextcloud,mp=/mnt/nextcloud &&
-pct set 121 -mp0 /mnt/pve/cyclone-01-backup,mp=/mnt/backup &&
+pct set 121 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup &&
 pct set 121 -mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books &&
 pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio 
 ```
@@ -357,13 +357,7 @@ grep -qxF 'root:0:1' /etc/subuid || echo 'root:0:1' >> /etc/subuid &&
 grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid 
 ~~
 
-###
-sudo mkdir -p /mnt/nextcloud/data &&
-sudo chown -R www-data:www-data /mnt/nextcloud/data &&
-sudo chmod -R 755 /mnt/nextcloud/data
-
-
-### 4.05 Install Nextcloud SW prerequisites - Ubuntu 18.04
+### 4.05 Install PHP - Ubuntu 18.04
 First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type your root login and password.
 
 The first step, to set up Nextcloud you must have a running LAMP server on your Ubuntu 18.04 LXC system. The following commands will install it. Type the following:
@@ -371,232 +365,105 @@ The first step, to set up Nextcloud you must have a running LAMP server on your 
 ```
 # Apt-get update
 sudo apt-get update -y &&
-# Install unzip
-sudo apt-get install -y unzip &&
 # Install PHP
-sudo apt-get install -y php php-gd php-curl php-zip php-xml php-mbstring &&
-# Install Apache2
-sudo apt-get install -y apache2 libapache2-mod-php &&
-# Install MySQL database server.
-sudo apt-get install -y mysql-server php-mysql
+sudo apt-get install -y php-cli php-fpm php-json php-intl php-imagick php-pdo php-mysql php-zip php-gd php-mbstring php-curl php-xml php-pear php-bcmath
 ```
 You will be prompted during the installation whether to `Restart services during package upgrades without asking?`. Select `<Yes>`.
 
-### 4.06 Download the latest Nextcloud Archive - - Ubuntu 18.04
-Here we download and install the latest Nextcloud version. Type the following:
+### 4.07 Install Apache Web Server
+Here we install and configure a Apache HTTP Server. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type the following:
 
 ```
+sudo apt-get install -y apache2 libapache2-mod-php
+```
+
+### 4.06 Install MySQL database server.
+NextCloud can use MySQL, MariaDB, PostgreSQL or SQLite database to store its data. In this guide, we will use MySQL database server. Type the following:
+
+```
+sudo apt-get install -y mysql-server
+```
+
+### 4.08 Download the Nextcloud 17.0.0 Archive - Ubuntu 18.04
+Here we download and install the latest Nextcloud version. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and login and type the following:
+
+```
+# Install unzip
+sudo apt-get install -y unzip &&
 # Download Nextcloud
-wget https://download.nextcloud.com/server/releases/latest.zip -P /tmp
+wget https://download.nextcloud.com/server/releases/latest.zip -P /tmp && # Latest version, if problems try v17.0.0
+#wget https://download.nextcloud.com/server/releases/nextcloud-17.0.0.zip -P /tmp &&
 # Extract Nextcloud zip
-unzip -o /tmp/latest.zip -d /var/www/html
+unzip -o /tmp/latest.zip -d /var/www/html &&
 # Set appropriate permissions
-sudo chown -R www-data:www-data /var/www/html/nextcloud
-sudo chmod -R 755 /var/www/html/nextcloud
+sudo chown -R www-data:www-data /var/www/html/nextcloud/ &&
+sudo chmod -R 755 /var/www/html/nextcloud &&
 # Remove archive
-sudo rm -f /tmp/nextcloud-17.0.0.zip
+sudo rm -f /tmp/latest.zip
 ```
 
-### 4.07 Create Nextclouds MySQL Database
-The installation script requires user input to enter passwords. Its best to create and record two different complex passwords (i.e oTL&9qe/9Y&RV style) ready for the Nextcloud installation.
+### 4.09 Create Nextclouds MySQL Database and User
+After the installation of the database server, you need to create a database and user for Nextcloud.
 
-| Nexcloud Passwords | Value | Notes
+This step requires user input to enter passwords. Its best to create and record two different strong passwords (i.e oTL&9qe/9Y&RV style) ready for the Nextcloud installation.
+
+| Nextcloud StrongPasswords | Value | Notes
 | :---  | :---: | :---
-| MySQL Password | `complex password` | *This password is for your Nextcloud SQL - make a record of it*
-| Nextcloud Password | `complex password` | *This password is for your Nextcloud admin account - make a record of it*
+| MySQL_ROOT_Password | `STRONGPASSWORD` | *This is your MySQL root password - make a record of it*
+| MySQL_NEXTCLOUD_Password| `STRONGPASSWORD`  | *This is your MySQL Nextcloud user password - make a record of it*
+| Nextcloud_Password | `STRONGPASSWORD`  | *This password is your Nextcloud WebGUI admin account passowrd - make a record of it*
 
 Next you need to create the MySQL database and user account for configuring Nextcloud. Use the following set of commands to log into MySQL server and create a new database and user. 
 
 ```
 mysql -u root -p
-# You will be prompted to enter a password.
-# Enter password:
 ```
-After creating the MySQL password the terminal will present you with a `mysql>` prompt.  Only type commands at the `mysql>` prompt (i.e "CREATE DATABASE nextcloud;" **NOT** "mysql> CREATE DATABASE nextcloud;"):
+You will be prompted to enter a password. Enter your **MySQL_ROOT_Password**.
+
+After creating the MySQL database root password the terminal will present you with a `mysql>` prompt.  At the `mysql>` prompt type the following (Cut & Paste) and don’t forget to replace STRONGPASSWORD with your database user **MySQL_NEXTCLOUD_Password**. :
 
 ```
-mysql> CREATE DATABASE nextcloud;
-mysql> GRANT ALL ON nextcloud.* to 'nextcloud'@'localhost' IDENTIFIED BY '_Pa$$w0rd_';
-mysql> FLUSH PRIVILEGES;
-mysql> quit
+CREATE USER 'nextcloud'@'localhost' identified by 'STRONGPASSWORD';
+CREATE DATABASE nextcloud;
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
+FLUSH PRIVILEGES;
+QUIT;
 ```
-Now type `reboot` to restart the LXC before proceeding to the next step.
+Now type `reboot -h` to restart the LXC before proceeding to the next step.
 
-### 4.08 Run Nextcloud Web Installer
-Access the Nextcloud directory in the web browser as below. Change localhost to your server IP address or domain name.
+### 4.10 Configure Apache Web Server - Ubuntu 18.04
+Here we configure a Apache HTTP Server. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type the following:
 
-http://192.168.80.121/nextcloud/
+```
+echo -e "<VirtualHost *:80>
+     ServerAdmin admin@example.com
+     DocumentRoot /var/www/html/nextcloud/
+     ServerName example.com
+     ServerAlias www.example.com
+     ErrorLog /var/log/apache2/nextcloud-error.log
+     CustomLog /var/log/apache2/nextcloud-access.log combined
+ 
+    <Directory /var/www/html/nextcloud/>
+        Options +FollowSymlinks
+        AllowOverride All
+        Require all granted
+        SetEnv HOME /var/www/html/nextcloud
+        SetEnv HTTP_HOME /var/www/html/nextcloud
+        <IfModule mod_dav.c>
+          Dav off
+        </IfModule>
+    </Directory>
+</VirtualHost>" > /etc/apache2/conf-enabled/nextcloud.conf &&
+# Enable required Apache modules and restart the service
+sudo a2enmod rewrite dir mime env headers &&
+sudo systemctl restart apache2
+```
 
-Enter new admin credentials to create an admin account and provide the location of the data folder.
+### 4.11 Setup Nextcloud
+Browse to http://192.168.80.121 to start using Nextcloud. You may receive a Firefox warning **Warning: Potential Security Risk Ahead** which you are to ignore. Simply click `Advanced` then `Accept the Risk and Continue` to proceed to your Nextcloud login.
 
+### 4.12 Patches and Fixes
+sudo -u www-data ls -lisa /mnt/nextcloud/data
+sudo -u www-data ls -lisa /var/www/html/nextcloud/data
 
-Now follow the onscreen prompts and type your input as follows:
-
-| First boot configuration | Value | Notes
-| :---  | :---: | :---
-| **MySQL Password**
-| Enter | `insert MySQL password in the box` | *Add a complex password and record it i.e oTL&9qe/9Y&RV*
-| **Nextcloud Password**
-| Enter | `insert Nextcloud password in the box` | *Add a complex password and record it i.e oTL&9qe/9Y&RV*
-| **Nextcloud Domain**
-| Enter the domain to serve Nextcloud | `*` | *Enter a asterix for now. You will configure domain access later*
-| **Initialize Hub Services**
-| Select | `<Skip>` | *Not required*
-| **System Notifications and Critical Security Alerts**
-| Select | `<Skip>` | *Not required at this stage*
-| **Security Updates**
-| Security updates? | `<Install>` |
-
-Your Nextcloud console will commence downloading security updates and complete the Nextcloud installation. On completion a dialoque box will appear listing your Nextcloud appliance services.
-
-![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-lxc-homelab/master/images/appliance.png)
-
-Click/Select `<Quit>`
-
-### 3.04 Configure Nextcloud home- Turnkey Debian 9
-
-
-### 3.05 Setup Nextcloud
-Browse to http://192.168.70.121 to start using Nextcloud. You may receive a Firefox warning **Warning: Potential Security Risk Ahead** which you are to ignore. Simply click `Advanced` then `Accept the Risk and Continue` to proceed to your Nextcloud login.
-
-Your Nextcloud user is `admin`and  password is your `Nextcloud Password` which you set Step 3.04.
-
-
-# Set Nextcloud Home folder to NAS
-sed -i "/'datadirectory' => '\/var\/www\/nextcloud\/data',/c\  'datadirectory' => '\/mnt\/nextcloud\/data'," /var/www/nextcloud/config/config.php 
-
-
-echo -e "lxc.idmap: u 0 100000 33
-lxc.idmap: g 0 100000 33
-lxc.idmap: u 33 33 1
-lxc.idmap: g 33 33 1
-lxc.idmap: u 34 100034 65502
-lxc.idmap: g 34 100034 65502" >> /etc/pve/lxc/121.conf
-
-echo -e "lxc.idmap: u 1 100000 32
-lxc.idmap: g 1 100000 32
-lxc.idmap: u 0 0 1
-lxc.idmap: g 0 0 1
-lxc.idmap: u 33 33 1
-lxc.idmap: g 33 33 1
-lxc.idmap: u 34 100034 65502
-lxc.idmap: g 34 100034 65502" >> /etc/pve/lxc/121.conf
-
-echo -e "root:33:1" >> /etc/subuid &&
-echo -e "root:33:1" >> /etc/subgid
-
-
-echo -e "root:0:1" >> /etc/subuid &&
-echo -e "root:0:1" >> /etc/subgid
-
-65535 
-
-# uid map: from uid 0 map 1005 uids (in the ct) to the range starting 100000 (on the host), so 0..1004 (ct) → 100000..101004 (host)
-lxc.idmap = u 0 100000 1005
-lxc.idmap = g 0 100000 1005
-# we map 1 uid starting from uid 1005 onto 1005, so 1005 → 1005
-lxc.idmap = u 1005 1005 1
-lxc.idmap = g 1005 1005 1
-# we map the rest of 65535 from 1006 upto 101006, so 1006..65535 → 101006..165535
-lxc.idmap = u 1006 101006 64530
-lxc.idmap = g 1006 101006 64530
-
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf
-
-
----
-nano /var/www/nextcloud/config/config.php
-sudo nextcloud.occ config:system:set trusted_domains 1 --value=192.168.1.*
-
-  'datadirectory' => '/var/www/nextcloud/data',
-  
-apt-get update
-apt-get install sudo
-1. sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
-2. mkdir -p /mnt/nextcloud/data
-3. cp -a /var/www/nextcloud/data. /mnt/nextcloud/data
-4. sudo chown -R www-data:www-data /mnt/nextcloud/data
-5. nano /path/to/nextcloud/config/config.php
-       'datadirectory' => '/new/path/to/data',
-6. mysqldump -u<rootuser> -p > /path/to/dbdump/dump.sql
-7. Adjust "oc_storages"database table to reflect the new data folder location:
-      mysql -u<rootuser> -p
-      //enter mysql root password, then within mysql console:
-      use <nextclouddb>;
-      update oc_storages set id='local::/new/path/to/data/' where id='local::/path/to/data/'; //take care about backslash at the end of path!!
-      quit;
-8. sudo -u www-data php /path/to/nextcloud/occ maintenance:mode --off
-  
-
-
-Install PHP
-
-Let’s start with the installation of PHP version 5.6 or higher version on your Ubuntu 18.04 LTS Bionic systems.
-
-sudo apt-get update -y &&
-sudo apt-get install -y unzip &&
-sudo apt-get install -y php php-gd php-curl php-zip php-xml php-mbstring
-
-Install Apache2
-
-sudo apt-get install -y apache2 libapache2-mod-php
-
-Install MySQL
-
-Also install MySQL database server.
-
-sudo apt-get install -y mysql-server php-mysql
-
-Step 2 – Download Nextcloud Archive
-
-After successfully configuring lamp server on your system, Let’s download latest Nextcloud from its official website.
-
-# Download Nextcloud
-wget https://download.nextcloud.com/server/releases/nextcloud-17.0.0.zip -P /tmp
-# Extract Nextcloud zip
-unzip -o /tmp/nextcloud-17.0.0.zip -d /var/www/html
-# Set appropriate permissions
-sudo chown -R www-data:www-data /var/www/html/nextcloud
-sudo chmod -R 755 /var/www/html/nextcloud
-# Remove archive
-sudo rm -f /tmp/nextcloud-17.0.0.zip
-
-nextcloud
-Now extract downloaded archive under website document root and set up appropriate permissions on files and directories.
-
-cd /var/www/html &&
-sudo unzip /tmp/nextcloud-17.0.0.zip &&
-sudo chown -R www-data:www-data nextcloud &&
-sudo chmod -R 755 nextcloud
-
-Now, remove the archive file.
-
-sudo rm -f /tmp/nextcloud-17.0.0.zip
-
-Step 3 – Create MySQL Database
-
-After extracting code, let’s create a MySQL database and user account for configuring Next cloud. Use the following set of command to log in to MySQL server and create database and user.
-
-mysql -u root -p
-Enter password:
-
-CREATE DATABASE nextcloud; &&
-GRANT ALL ON nextcloud.* to 'nextcloud'@'localhost' IDENTIFIED BY '_Pa$$w0rd_'; &&
-FLUSH PRIVILEGES; &&
-quit
-
-Step 4 – Run Nextcloud Web Installer
-
-Access the Nextcloud directory in the web browser as below. Change localhost to your server IP address or domain name.
-
- http://localhost/nextcloud/
-
-grep -q '^root:33:1' /etc/subuid && sed -i 's/root:33:1/root:33:1/' /etc/subuid || echo 'root:33:1' >> /etc/subuid
-
-grep -qxF 'root:33:1' /etc/subuid || echo 'root:33:1' >> /etc/subuid
 
