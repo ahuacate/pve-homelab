@@ -340,7 +340,6 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 
 Underdevelopment so ignore - for unprivileged CT.
 ~~To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.~~
-
 ~~Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
 echo -e "lxc.idmap: u 1 100000 32
 lxc.idmap: g 1 100000 32
@@ -354,7 +353,7 @@ lxc.idmap: g 34 100034 65502" >> /etc/pve/lxc/121.conf &&
 grep -qxF 'root:33:1' /etc/subuid || echo 'root:33:1' >> /etc/subuid &&
 grep -qxF 'root:33:1' /etc/subgid || echo 'root:33:1' >> /etc/subgid &&
 grep -qxF 'root:0:1' /etc/subuid || echo 'root:0:1' >> /etc/subuid &&
-grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid 
+grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid
 ~~
 
 ### 4.05 Install PHP - Ubuntu 18.04
