@@ -467,3 +467,135 @@ sudo -u www-data ls -lisa /mnt/nextcloud/data
 sudo -u www-data ls -lisa /var/www/html/nextcloud/data
 
 
+## 5.00 Syncthing - Ubuntu 18.04
+Syncthing is an open source continuous file synchronization used to sync files between two or more computers in a network. This guide will cover the installation and usage of Syncthing on Ubuntu 18.04.
+
+### 5.01 Download the NextCloud LXC template - Ubuntu 18.04
+
+First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface Datacenter > typhoon-01 >Local (typhoon-01) > Content > Templates select ubuntu-18.04-standard LXC and click Download.
+
+Or use a Proxmox typhoon-01 CLI >_ Shell and type the following:
+```
+wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
+```
+
+### 5.02 Create the Syncthing LXC - Ubuntu 18.04
+Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`122`|
+| Hostname |`syncthing`|
+| Unprivileged container | `☑` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template |`ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz`|
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`8 GiB`|
+| **CPU**
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`1024`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `80`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.80.122/24`|
+| Gateway (IPv4) |`192.168.80.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | `192.168.80.5`
+| DNS servers | `192.168.80.5`
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your Syncthing LXC. The above will create the Syncthing LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Syncthing LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+```
+
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 5.03 Setup Nextcloud Mount Points - Ubuntu 18.04
+If you used Script (B) in Section 3.02 then you have no Moint Points.
+
+Please note your Proxmox Syncthing LXC MUST BE in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+pct set 121 -mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage &&
+pct set 121 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup &&
+pct set 121 -mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books &&
+pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio 
+```
+
+### 5.04 Unprivileged container mapping - Ubuntu 18.04
+Under Development.
+
+### 5.05 Installing Syncthing - Ubuntu 18.04
+The Syncthing package is available on the official repository which can easily be added by running the following commands on your terminal.
+
+First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
+
+```
+# Start by installing curl package & the apt-transport-https package 
+sudo apt-get update &&
+sudo apt install -y curl apt-transport-https gnupg2 &&
+# Add the release PGP keys & add the "stable" channel to your APT sources
+curl -s https://syncthing.net/release-key.txt | sudo apt-key add - &&
+echo "deb https://apt.syncthing.net/ syncthing release" > /etc/apt/sources.list.d/syncthing.list &&
+# Update system and install syncthing package
+sudo apt-get update &&
+sudo apt-get install -y syncthing &&
+# Check Syncthing version
+syncthing --version
+```
+
+### 5.06 Configuring Syncthing - Ubuntu 18.04
+Create systemd unit files to manage syncthing service.
+
+With the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
+```
+echo -e "[Unit]
+Description=Syncthing - Open Source Continuous File Synchronization for %I
+Documentation=man:syncthing(1)
+After=network.target
+
+[Service]
+User=%i
+ExecStart=/usr/bin/syncthing -no-browser -gui-address="192.168.80.122:8384" -no-restart -logflags=0
+Restart=on-failure
+SuccessExitStatus=3 4
+RestartForceExitStatus=3 4
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/syncthing@.service &&
+sudo systemctl daemon-reload &&
+sudo systemctl start syncthing@root
+```
+
+### 5.07 Accessing Syncthing WebGUI
+The Syncthing admin GUI is started automatically by systemd and is available on https://192.168.80.122:8384/.
