@@ -32,44 +32,63 @@ With unprivileged LXC containers you will have issues with UIDs (user id) and GI
 
 However you will soon realise that every file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable for host mounted shared data resources. For shared data you want to access the directory with the same - unprivileged - uid as it's using on other LXC machines.
 
-The fix is to change the UID and GID mapping.
+The fix is to change the UID and GID mapping. So in our build we will create a new users/groups:
 
-So like our [Proxmox Media LXC builds](https://github.com/ahuacate/proxmox-lxc-media#proxmox-lxc-media) where we created a new user/group called `media` and made uid 1005 and gid 1005 accessible to unprivileged LXC containers, we need to do much the same but with UID's 0 (root) and 33 (www-data) AND GID's 0 (root) and 33 (www-data) on some LXC's like Nextcloud. This is achieved in three parts during the course of creating your new media LXC's.
+*  user `media` (uid 1605) and group `medialab` (gid 65605) accessible to unprivileged LXC containers (i.e Jellyfin, NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget);
+*  user `storm` (uid 1606) and group `homelab` (gid 65606) accessible to unprivileged LXC containers (i.e Syncthing, Nextcloud, Unifi);
+*  user `typhoon` (uid 1607) and group `privatelab` (gid 65606) accessible to unprivileged LXC containers (i.e all things private).
 
-### 1.01 Unprivileged container mapping
+Also because Synology new Group ID's are in ranges above 65536, outside of Proxmox ID map range, we must pass through our Medialab (gid 65605), Homelab (gid 65606) and Privatelab (gid 65607) Group GID's mapped 1:1.
+
+This is achieved in three parts during the course of creating your new media LXC's.
+
+### 1.01 Unprivileged container mapping - homelablab
 To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
-echo -e "lxc.idmap: u 1 100000 32
-lxc.idmap: g 1 100000 32
-lxc.idmap: u 0 0 1
-lxc.idmap: g 0 0 1
-lxc.idmap: u 33 33 1
-lxc.idmap: g 33 33 1
-lxc.idmap: u 34 100034 65502
-lxc.idmap: g 34 100034 65502" >> /etc/pve/lxc/container-id.conf
+# User media | Group homelab
+echo -e "lxc.idmap: u 0 100000 1606
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1606 1606 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1607 101607 63929
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e homelab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/container-id.conf
 ```
-The above example is for Nextcloud.
+### 1.02 Allow a LXC to perform mapping on the Proxmox host - medialab
+Next we have to allow the LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
 
-### 1.02 Allow a LXC to perform mapping on the Proxmox host
-Next we have to allow LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
+To achieve this we need to **add** lines to `/etc/subuid` (users) and `/etc/subgid` (groups). So we need to define two ranges: one where the system IDs (i.e root uid 0) of the container can be mapped to an arbitrary range on the host for security reasons, and another where Synology GIDs above 65536 of the container can be mapped to the same GIDs on the host. That's why we have the following lines in the /etc/subuid and /etc/subgid files.
 
-To achieve this we need to **add** the line `root:0:1` and `root:33:1` to the files `/etc/subuid` and `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
+Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
+
 ```
-echo -e "root:33:1" >> /etc/subuid &&
-echo -e "root:0:1" >> /etc/subuid
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
 ```
-Then we need to also **add** the line `root:0:1` and `root:33:1` to the file `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+The above code adds a ID map range from 65604 > 65704 on the container to the same range on the host. Next ID maps gid100 (default linux users group) and uid1605 (username media) on the container to the same range on the host.
+
+
+### 1.03 Create a newuser `media` in a LXC
+We need to create a `media` user in all media LXC's which require shared data (NFS NAS shares). After logging into the LXC container type the following:
+
+(A) To create a user without a Home folder
 ```
-echo -e "root:33:1" >> /etc/subgid &&
-echo -e "root:0:1" >> /etc/subgid
+groupadd -g 65606 homelab &&
+useradd -u 1606 -g homelab -M storm
 ```
-Note, we **add** these lines not replace any default lines. My /etc/subuid and /etc/subgid both look identical:
+(B) To create a user with a Home folder
 ```
-root:1005:1 # media userID
-root:100000:65536
-root:33:1 # www-data userID
-root:0:1 # root userID
+groupadd -g 65606 homelab &&
+useradd -u 1606 -g homelab -m storm
 ```
+Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
+
+---
 
 ## 2.00 PiHole LXC - CentOS7
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
