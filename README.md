@@ -15,17 +15,17 @@ Other Prerequisites are:
 - [x] pfSense is fully configured on typhoon-01 including both OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
 
 Tasks to be performed are:
-- [ ] 1.00 PiHole LXC - CentOS7
-- [ ] 2.00 UniFi Controller - CentOS7
-- [ ] 3.00 NextCloud LXC - Turnkey Debian
+- [ ] 1.00 Unprivileged LXC Containers and file permissions
+- [ ] 2.00 PiHole LXC - CentOS7
+- [ ] 3.00 UniFi Controller - CentOS7
+- [ ] 4.00 NextCloud LXC
 
 ## About LXC Homelab Installations
 This page is about installing Proxmox LXC's and VM's for your homelab network. Software tools like PiHole, cloud storage and stuff.
 
 Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download the following templates:
 *  `centos-7-default`;
-*  `ubuntu-18.04-standard`; *and,*
-*  `turnkey-nextcloud`.
+*  `ubuntu-18.04-standard`.
 
 ## 1.00 Unprivileged LXC Containers and file permissions
 With unprivileged LXC containers you will have issues with UIDs (user id) and GIDs (group id) permissions with bind mounted shared data. All of the UIDs and GIDs are mapped to a different number range than on the host machine, usually root (uid 0) became uid 100000, 1 will be 100001 and so on.
@@ -88,7 +88,6 @@ useradd -u 1606 -g homelab -m storm
 ```
 Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
 
----
 
 ## 2.00 PiHole LXC - CentOS7
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
@@ -297,16 +296,16 @@ Now using the web interface `Datacenter` > `251 (unifi)` > `>_ Console` run the 
 
 ```
 # Install required packages
-sudo apt-get update && sudo apt install -y ca-certificates apt-transport-https &&
+sudo apt update && sudo apt install -y ca-certificates apt-transport-https &&
 # Add a new source list
 echo 'deb http://www.ui.com/downloads/unifi/debian stable ubiquiti' | sudo tee /etc/apt/sources.list.d/100-ubnt-unifi.list
 #  Add the GPG Keys
 sudo wget -O /etc/apt/trusted.gpg.d/unifi-repo.gpg https://dl.ui.com/unifi/unifi-repo.gpg &&
-sudo apt-get install -y gnupg2 &&
+sudo apt install -y gnupg2 &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6 &&
 echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.4.list &&
 #  Install and upgrade the UniFi controller
-sudo apt-get update && sudo apt-get install -y unifi
+sudo apt update && sudo apt install -y unifi
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
