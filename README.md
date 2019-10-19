@@ -42,7 +42,7 @@ Also because Synology new Group ID's are in ranges above 65536, outside of Proxm
 
 This is achieved in three parts during the course of creating your new media LXC's.
 
-### 1.01 Unprivileged container mapping - homelablab
+### 1.01 Unprivileged container mapping - homelab
 To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
 # User media | Group homelab
@@ -70,7 +70,7 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
 ```
 
-The above code adds a ID map range from 65604 > 65704 on the container to the same range on the host. Next ID maps gid100 (default linux users group) and uid1605 (username media) on the container to the same range on the host.
+The above code adds a ID map range from 65604 > 65704 on the container to the same range on the host. Next ID maps gid100 (default linux users group) and uid1606 (username storm) on the container to the same range on the host.
 
 
 ### 1.03 Create a newuser `media` in a LXC
@@ -184,14 +184,13 @@ You can now login to your PiHole server using your preferred web browser with th
 ### 2.04 Enable DNSSEC - CentOS7
 You can enable DNSSEC when using Cloudfare which support DNSSEC. Using the PiHole webadmin URL http://192.168.1.254/admin/index.php go to `Settings` > `DNS Tab` and enable `USE DNSSEC` under Advanced DNS Settings. Click `Save`.
 
----
 
-## 3.00 UniFi Controller - CentOS7
+## 3.00 UniFi Controller - Ubuntu 18.04
 Rather than buy a UniFi Cloud Key to securely run a instance of the UniFi Controller software you can use Proxmox LXC container to host your UniFi Controller software.
 
-For this we will use a CentOS LXC container.
+For this we will use a Ubuntu 18.04 LXC container.
 
-### 3.01 Create a CentOS7 LXC for UniFi Controller - CentOS7
+### 3.01 Create a Ubuntu 18.04 LXC for UniFi Controller - Ubuntu 18.04
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -207,10 +206,10 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | SSH Public key | Add one if you want to
 | **Template**
 | Storage | `local` |
-| Template |`centos-7-default_xxxx_amd`|
+| Template |`ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz`|
 | **Root Disk**
 | Storage |`typhoon-share`|
-| Disk Size |`8 GiB`|
+| Disk Size |`20 GiB`|
 | **CPU**
 | Cores |`1`|
 | CPU limit | Leave Blank
@@ -240,25 +239,78 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 And Click `Finish` to create your UniFi LXC.
 
 Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for UniFi LXC):
+
+**Script (A):** Including LXC Mount Points
 ```
-pct create 251 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 1 --hostname unifi --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.251/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
+pct create 251 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname unifi --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.251/24,type=veth --ostype ubuntu --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-**Note:** test CentOS UniFi package listing is available [HERE](https://community.ui.com/questions/Unofficial-RHEL-CentOS-UniFi-Controller-rpm-packages/a5db143e-e659-4137-af8d-735dfa53e36d).
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 251 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname unifi --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.251/24,type=veth --ostype ubuntu --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password
+```
 
-### 3.02 Install UniFi - CentOS7
-First Start your `251 (unifi)` LXC container using the web interface `Datacenter` > `251 (unifi)` > `Start`. Then login into your `251 (unifi)` LXC by going to  `Datacenter` > `251 (unifi)` > `>_ Console and logging in with username `root` and the password you created in the previous step 2.1.
+### 3.02 Setup UniFi Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 2.02 then you have no Moint Points.
+
+Please note your Proxmox UniFi LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+
+```
+pct set 251 -mp0 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+### 3.03 Unprivileged container mapping - Ubuntu 18.04
+To change the Jellyfin container mapping we change the container UID and GID in the file `/etc/pve/lxc/111.conf`. Simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following:
+
+```
+# User storm | Group homelab
+echo -e "lxc.idmap: u 0 100000 1606
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1606 1606 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1607 101607 63929
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e homelab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/251.conf&&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
+```
+
+### 3.04 Create new "storm" user - Ubuntu 18.04
+First start LXC 251 (unifi) with the Proxmox web interface go to `typhoon-01` > `251 (unifi)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `251 (unifi)` > `>_ Shell` and type the following:
+```
+groupadd -g 65606 homelab &&
+useradd -u 1606 -g homelab -m storm
+```
+
+### 3.05 Install UniFi - Ubuntu 18.04
+First Start your `251 (unifi)` LXC container using the web interface `Datacenter` > `251 (unifi)` > `Start`. Then login into your `251 (unifi)` LXC by going to  `Datacenter` > `251 (unifi)` > `>_ Console` and logging in with username `root` and the password you created in the previous step 2.01.
 
 Now using the web interface `Datacenter` > `251 (unifi)` > `>_ Console` run the following command:
 
 ```
-yum install epel-release -y &&
-yum install http://dl.marmotte.net/rpms/redhat/el7/x86_64/unifi-controller-5.8.24-1.el7/unifi-controller-5.8.24-1.el7.x86_64.rpm -y &&
-systemctl enable unifi.service &&
-systemctl start unifi.service
+# Install required packages
+sudo apt-get update && sudo apt install -y ca-certificates apt-transport-https &&
+# Add a new source list
+echo 'deb http://www.ui.com/downloads/unifi/debian stable ubiquiti' | sudo tee /etc/apt/sources.list.d/100-ubnt-unifi.list
+#  Add the GPG Keys
+sudo wget -O /etc/apt/trusted.gpg.d/unifi-repo.gpg https://dl.ui.com/unifi/unifi-repo.gpg &&
+sudo apt-get install -y gnupg2 &&
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6 &&
+echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.4.list &&
+#  Install and upgrade the UniFi controller
+sudo apt-get update && sudo apt-get install -y unifi
 ```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 3.03 Move the UniFi Controller to your LXC Instance - CentOS7
+### 3.06 Move the UniFi Controller to your LXC Instance - CentOS7
 You can backup the current configuration and move it to a different computer.
 
 Take a backup of the existing controller using the UniFi WebGUI interface and go to `Settings` > `Maintenance` > `Backup` > `Download Backup`. This will create a `xxx.unf` file format to be saved at your selected destination on your PC (i.e Downloads).
@@ -266,6 +318,9 @@ Take a backup of the existing controller using the UniFi WebGUI interface and go
 Now on your Proxmox UniFi LXC, https://192.168.1.251:8443/ , you must restore the downloaded backup unf file to the new machine by going to `Settings` > `Maintenance` > `Restore` > `Choose File` and selecting the unf file saved on your local PC.
 
 But make sure when you are restoring the backup you Have closed the previous UniFi Controller server and software because you cannot manage the APs by two controller at a time.
+
+### 3.07 Patches & Fixes
+Read UniFi's instructions [HERE](https://help.ubnt.com/hc/en-us/articles/220066768-UniFi-How-to-Install-and-Update-via-APT-on-Debian-or-Ubuntu).
 
 
 ## 4.00 NextCloud - Ubuntu 18.04
