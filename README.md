@@ -16,15 +16,14 @@ Other Prerequisites are:
 
 Tasks to be performed are:
 - [ ] 1.00 Unprivileged LXC Containers and file permissions
-- [ ] 2.00 PiHole LXC - CentOS7
-- [ ] 3.00 UniFi Controller - CentOS7
+- [ ] 2.00 PiHole LXC - Ubuntu 18.04
+- [ ] 3.00 UniFi Controller - Ubuntu 18.04
 - [ ] 4.00 NextCloud LXC
 
 ## About LXC Homelab Installations
 This page is about installing Proxmox LXC's and VM's for your homelab network. Software tools like PiHole, cloud storage and stuff.
 
 Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download the following templates:
-*  `centos-7-default`;
 *  `ubuntu-18.04-standard`.
 
 ## 1.00 Unprivileged LXC Containers and file permissions
@@ -56,7 +55,7 @@ lxc.idmap: g 101 100101 65435
 lxc.idmap: u 65604 65604 100
 lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/container-id.conf
 ```
-### 1.02 Allow a LXC to perform mapping on the Proxmox host - medialab
+### 1.02 Allow a LXC to perform mapping on the Proxmox host - homelab
 Next we have to allow the LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
 
 To achieve this we need to **add** lines to `/etc/subuid` (users) and `/etc/subgid` (groups). So we need to define two ranges: one where the system IDs (i.e root uid 0) of the container can be mapped to an arbitrary range on the host for security reasons, and another where Synology GIDs above 65536 of the container can be mapped to the same GIDs on the host. That's why we have the following lines in the /etc/subuid and /etc/subgid files.
@@ -73,7 +72,7 @@ grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
 The above code adds a ID map range from 65604 > 65704 on the container to the same range on the host. Next ID maps gid100 (default linux users group) and uid1606 (username storm) on the container to the same range on the host.
 
 
-### 1.03 Create a newuser `media` in a LXC
+### 1.03 Create a newuser `storm` in a LXC
 We need to create a `media` user in all media LXC's which require shared data (NFS NAS shares). After logging into the LXC container type the following:
 
 (A) To create a user without a Home folder
@@ -88,11 +87,10 @@ useradd -u 1606 -g homelab -m storm
 ```
 Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
 
-
-## 2.00 PiHole LXC - CentOS7
+## 2.00 PiHole LXC - Ubuntu 18.04
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
 
-### 2.01 Create a CentOS7 LXC for PiHole - CentOS7
+### 2.01 Create a Ubuntu 18.04 LXC for PiHole - Ubuntu 18.04
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -108,10 +106,10 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | SSH Public key | Add one if you want to
 | **Template**
 | Storage | `local` |
-| Template |`centos-7-default_xxxx_amd`|
+| Template |`ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz`|
 | **Root Disk**
 | Storage |`typhoon-share`|
-| Disk Size |`8 GiB`|
+| Disk Size |`20 GiB`|
 | **CPU**
 | Cores |`1`|
 | CPU limit | Leave Blank
@@ -141,17 +139,23 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 And Click `Finish` to create your PiHole LXC.
 
 Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for PiHole LXC):
+
 ```
-pct create 254 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 1 --hostname pihole --cpulimit 1 --cpuunits 1024 --memory 256 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.254/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
+pct create 254 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname pihole --cpulimit 1 --cpuunits 1024 --memory 256 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.254/24,type=veth --ostype ubuntu --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
 ```
 
-### 2.02 Install PiHole - CentOS7
+### 2.02 Install PiHole - Ubuntu 18.04
 First Start your `254 (pihole)` LXC container using the web interface `Datacenter` > `254 (pihole)` > `Start`. Then login into your `254 (pihole)` LXC by going to  `Datacenter` > `254 (pihole)` > `>_ Console and logging in with username `root` and the password you created in the previous step 1.1.
 
 Now using the web interface `Datacenter` > `254 (pihole)` > `>_ Console` run the following command:
+
 ```
+sudo apt update &&
+sudo apt install -y curl &&
 curl -sSL https://install.pi-hole.net | bash
 ```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
+
 The PiHole installation package will download and the installation will commence. Follow the prompts making sure to enter the prompts and field values as follows:
 
 | PiHole Installation | Value | Notes
@@ -173,14 +177,14 @@ The PiHole installation package will download and the installation will commence
 
 Your installation should be complete.
 
-### 2.03 Reset your PiHole webadmin password - CentOS7
+### 2.03 Reset your PiHole webadmin password - Ubuntu 18.04
 Now reset the web admin password using the web interface `Datacenter` > `254 (pihole)` > `>_ Console` run the following command:
 ```
 pihole -a -p
 ```
 You can now login to your PiHole server using your preferred web browser with the following URL http://192.168.1.254/admin/index.php
 
-### 2.04 Enable DNSSEC - CentOS7
+### 2.04 Enable DNSSEC - Ubuntu 18.04
 You can enable DNSSEC when using Cloudfare which support DNSSEC. Using the PiHole webadmin URL http://192.168.1.254/admin/index.php go to `Settings` > `DNS Tab` and enable `USE DNSSEC` under Advanced DNS Settings. Click `Save`.
 
 
@@ -309,7 +313,7 @@ sudo apt update && sudo apt install -y unifi
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 3.06 Move the UniFi Controller to your LXC Instance - CentOS7
+### 3.06 Move the UniFi Controller to your LXC Instance - Ubuntu 18.04
 You can backup the current configuration and move it to a different computer.
 
 Take a backup of the existing controller using the UniFi WebGUI interface and go to `Settings` > `Maintenance` > `Backup` > `Download Backup`. This will create a `xxx.unf` file format to be saved at your selected destination on your PC (i.e Downloads).
@@ -436,7 +440,7 @@ First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01
 The first step, to set up Nextcloud you must have a running LAMP server on your Ubuntu 18.04 LXC system. The following commands will install it. Type the following:
 
 ```
-# Apt-get update
+# apt-get update
 sudo apt-get update -y &&
 # Install PHP
 sudo apt-get install -y php-cli php-fpm php-json php-intl php-imagick php-pdo php-mysql php-zip php-gd php-mbstring php-curl php-xml php-pear php-bcmath
@@ -604,12 +608,12 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype debian --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
 ### 5.03 Setup Nextcloud Mount Points - Ubuntu 18.04
@@ -622,11 +626,38 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 121 -mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage &&
 pct set 121 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup &&
 pct set 121 -mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books &&
-pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio 
+pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct set 121 -mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 ### 5.04 Unprivileged container mapping - Ubuntu 18.04
-Under Development.
+To change the Syncthing container mapping we change the container UID and GID in the file `/etc/pve/lxc/122.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+# User storm | Group homelab
+echo -e "lxc.idmap: u 0 100000 1606
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1606 1606 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1607 101607 63929
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e homelab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/122.conf&&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
+```
+
+### 5.05 Create new "storm" user - Ubuntu 18.04
+First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `>_ Shell` and type the following:
+```
+groupadd -g 65606 homelab &&
+useradd -u 1606 -g homelab -m storm
+```
 
 ### 5.05 Installing Syncthing - Ubuntu 18.04
 The Syncthing package is available on the official repository which can easily be added by running the following commands on your terminal.
@@ -635,17 +666,18 @@ First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01
 
 ```
 # Start by installing curl package & the apt-transport-https package 
-sudo apt-get update &&
+sudo apt update &&
 sudo apt install -y curl apt-transport-https gnupg2 &&
 # Add the release PGP keys & add the "stable" channel to your APT sources
 curl -s https://syncthing.net/release-key.txt | sudo apt-key add - &&
 echo "deb https://apt.syncthing.net/ syncthing release" > /etc/apt/sources.list.d/syncthing.list &&
 # Update system and install syncthing package
-sudo apt-get update &&
-sudo apt-get install -y syncthing &&
+sudo apt update &&
+sudo apt install -y syncthing &&
 # Check Syncthing version
 syncthing --version
 ```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
 ### 5.06 Configuring Syncthing - Ubuntu 18.04
 Create systemd unit files to manage syncthing service.
@@ -666,8 +698,12 @@ RestartForceExitStatus=3 4
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/syncthing@.service &&
+sleep 2 &&
 sudo systemctl daemon-reload &&
-sudo systemctl start syncthing@root
+sleep 2 &&
+sudo systemctl enable syncthing@storm &&
+sleep 2 &&
+sudo systemctl start syncthing@storm
 ```
 
 ### 5.07 Accessing Syncthing WebGUI
