@@ -326,6 +326,202 @@ But make sure when you are restoring the backup you Have closed the previous Uni
 Read UniFi's instructions [HERE](https://help.ubnt.com/hc/en-us/articles/220066768-UniFi-How-to-Install-and-Update-via-APT-on-Debian-or-Ubuntu).
 
 
+## 4.00 Syncthing - Ubuntu 18.04
+Syncthing is an open source continuous file synchronization used to sync files between two or more computers in a network. This guide will cover the installation and usage of Syncthing on Ubuntu 18.04.
+
+### 4.01 Download the NextCloud LXC template - Ubuntu 18.04
+
+First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface Datacenter > typhoon-01 >Local (typhoon-01) > Content > Templates select ubuntu-18.04-standard LXC and click Download.
+
+Or use a Proxmox typhoon-01 CLI >_ Shell and type the following:
+```
+wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
+```
+
+### 4.02 Create the Syncthing LXC - Ubuntu 18.04
+Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`122`|
+| Hostname |`syncthing`|
+| Unprivileged container | `☑` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template |`ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz`|
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`8 GiB`|
+| **CPU**
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`1024`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `80`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.80.122/24`|
+| Gateway (IPv4) |`192.168.80.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | `192.168.80.5`
+| DNS servers | `192.168.80.5`
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your Syncthing LXC. The above will create the Syncthing LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Syncthing LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
+```
+
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 4.03 Setup Nextcloud Mount Points - Ubuntu 18.04
+If you used Script (B) in Section 3.02 then you have no Moint Points.
+
+Please note your Proxmox Syncthing LXC MUST BE in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+pct set 121 -mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage &&
+pct set 121 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup &&
+pct set 121 -mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books &&
+pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct set 121 -mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
+```
+
+### 4.04 Unprivileged container mapping - Ubuntu 18.04
+To change the Syncthing container mapping we change the container UID and GID in the file `/etc/pve/lxc/122.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+# User storm | Group homelab
+echo -e "lxc.idmap: u 0 100000 1606
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1606 1606 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1607 101607 63929
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e homelab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/122.conf&&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
+```
+
+### 4.05 Create Syncthing default and user folders on your NAS - Ubuntu 18.04
+To create the Syncthing default folders use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+mkdir -m 775 -p {/mnt/pve/cyclone-01-cloudstorage/syncthing,/mnt/pve/cyclone-01-cloudstorage/syncthing/Sync} &&
+chown -R 1606:65606 {/mnt/pve/cyclone-01-cloudstorage/syncthing,/mnt/pve/cyclone-01-cloudstorage/syncthing/Sync}
+```
+
+### 4.06 Create new "storm" user - Ubuntu 18.04
+First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `>_ Shell` and type the following:
+```
+groupadd -g 65606 homelab &&
+useradd -u 1606 -g homelab -m storm
+```
+
+### 4.07 Installing Syncthing - Ubuntu 18.04
+The Syncthing package is available on the official repository which can easily be added by running the following commands on your terminal.
+
+First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
+
+```
+# Start by installing curl package & the apt-transport-https package 
+sudo apt update &&
+sudo apt install -y curl apt-transport-https gnupg2 &&
+# Add the release PGP keys & add the "stable" channel to your APT sources
+curl -s https://syncthing.net/release-key.txt | sudo apt-key add - &&
+echo "deb https://apt.syncthing.net/ syncthing release" > /etc/apt/sources.list.d/syncthing.list &&
+# Update system and install syncthing package
+sudo apt update &&
+sudo apt install -y syncthing &&
+# Check Syncthing version
+syncthing --version
+```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
+
+### 4.08 Configuring Syncthing - Ubuntu 18.04
+Create systemd unit files to manage syncthing service.
+
+With the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
+```
+echo -e "[Unit]
+Description=Syncthing - Open Source Continuous File Synchronization for %I
+Documentation=man:syncthing(1)
+After=network.target
+
+[Service]
+User=%i
+ExecStart=/usr/bin/syncthing -no-browser -gui-address="192.168.80.122:8384" -no-restart -logflags=0
+Restart=on-failure
+SuccessExitStatus=3 4
+RestartForceExitStatus=3 4
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/syncthing@.service &&
+sleep 2 &&
+sudo systemctl daemon-reload &&
+sleep 2 &&
+sudo systemctl enable syncthing@storm &&
+sleep 2 &&
+sudo systemctl start syncthing@storm
+```
+
+
+### 4.09 Edit Syncthing configuration file - Ubuntu 18.04
+The Syncthing configuration file needs to have its defaults changed - most important is default storage to your NAS. In this step we are going to change or add the following settings:
+*  `Default Folder Path` changed to /mnt/cloudstorage/syncthing;
+*  GUI changed to dark setting;
+
+Using the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `>_ Shell` and type the following:
+```
+# First stop the Syncthing Service
+sudo systemctl stop syncthing@storm
+sleep 2
+# Set the Default Folder Path
+sed -i 's|<defaultFolderPath>.*</defaultFolderPath>|<defaultFolderPath>/mnt/cloudstorage/syncthing</defaultFolderPath>|g' /home/storm/.config/syncthing/config.xml &&
+# Change the GUI to dark
+sed -i 's|<theme>.*</theme>|<theme>dark</theme>|g' /home/storm/.config/syncthing/config.xml
+<theme>dark</theme>
+# Start syncthing
+sudo systemctl start syncthing@storm
+```
+
+### 4.10 Accessing Syncthing WebGUI
+The Syncthing admin GUI is started automatically by systemd and is available on https://192.168.80.122:8384/.
+
+---
+---
+# Under Development
+
 ## 4.00 NextCloud - Ubuntu 18.04
 Nextcloud helps store your files, folders, contacts, photo galleries, calendars and more on a server of your choosing. Access that folder from your mobile device, your desktop, or a web browser. Access your data wherever you are, when you need it.
 
@@ -416,10 +612,10 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 ### 4.04 Unprivileged container mapping - Ubuntu 18.04
 
 Underdevelopment so ignore - for unprivileged CT.
-~~To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.~~
-~~Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following~~
+To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.~~
+Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following
 
-~~echo -e "lxc.idmap: u 1 100000 32
+echo -e "lxc.idmap: u 1 100000 32
 lxc.idmap: g 1 100000 32
 lxc.idmap: u 0 0 1
 lxc.idmap: g 0 0 1
@@ -431,7 +627,7 @@ lxc.idmap: g 34 100034 65502" >> /etc/pve/lxc/121.conf &&
 grep -qxF 'root:33:1' /etc/subuid || echo 'root:33:1' >> /etc/subuid &&
 grep -qxF 'root:33:1' /etc/subgid || echo 'root:33:1' >> /etc/subgid &&
 grep -qxF 'root:0:1' /etc/subuid || echo 'root:0:1' >> /etc/subuid &&
-grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid~~
+grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid
 
 
 ### 4.05 Install PHP - Ubuntu 18.04
@@ -544,167 +740,3 @@ sudo -u www-data ls -lisa /mnt/nextcloud/data
 sudo -u www-data ls -lisa /var/www/html/nextcloud/data
 
 
-## 5.00 Syncthing - Ubuntu 18.04
-Syncthing is an open source continuous file synchronization used to sync files between two or more computers in a network. This guide will cover the installation and usage of Syncthing on Ubuntu 18.04.
-
-### 5.01 Download the NextCloud LXC template - Ubuntu 18.04
-
-First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface Datacenter > typhoon-01 >Local (typhoon-01) > Content > Templates select ubuntu-18.04-standard LXC and click Download.
-
-Or use a Proxmox typhoon-01 CLI >_ Shell and type the following:
-```
-wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
-```
-
-### 5.02 Create the Syncthing LXC - Ubuntu 18.04
-Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
-
-| Create: LXC Container | Value |
-| :---  | :---: |
-| **General**
-| Node | `typhoon-01` |
-| CT ID |`122`|
-| Hostname |`syncthing`|
-| Unprivileged container | `☑` |
-| Resource Pool | Leave Blank
-| Password | Enter your pasword
-| Password | Enter your pasword
-| SSH Public key | Add one if you want to
-| **Template**
-| Storage | `local` |
-| Template |`ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz`|
-| **Root Disk**
-| Storage |`typhoon-share`|
-| Disk Size |`8 GiB`|
-| **CPU**
-| Cores |`1`|
-| CPU limit | Leave Blank
-| CPU Units | `1024`
-| **Memory**
-| Memory (MiB) |`1024`|
-| Swap (MiB) |`256`|
-| **Network**
-| Name | `eth0`
-| Mac Address | `auto`
-| Bridge | `vmbr0`
-| VLAN Tag | `80`
-| Rate limit (MN/s) | Leave Default (unlimited)
-| Firewall | `☑`
-| IPv4 | `☑  Static`
-| IPv4/CIDR |`192.168.80.122/24`|
-| Gateway (IPv4) |`192.168.80.5`|
-| IPv6 | Leave Blank
-| IPv4/CIDR | Leave Blank |
-| Gateway (IPv6) | Leave Blank |
-| **DNS**
-| DNS domain | `192.168.80.5`
-| DNS servers | `192.168.80.5`
-| **Confirm**
-| Start after Created | `☐`
-
-And Click `Finish` to create your Syncthing LXC. The above will create the Syncthing LXC without any of the required local Mount Points to the host.
-
-If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Syncthing LXC):
-
-**Script (A):** Including LXC Mount Points
-```
-pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
-```
-
-**Script (B):** Excluding LXC Mount Points:
-```
-pct create 122 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname syncthing --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.122/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
-```
-
-### 5.03 Setup Nextcloud Mount Points - Ubuntu 18.04
-If you used Script (B) in Section 3.02 then you have no Moint Points.
-
-Please note your Proxmox Syncthing LXC MUST BE in the shutdown state before proceeding.
-
-To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
-```
-pct set 121 -mp0 /mnt/pve/cyclone-01-cloudstorage,mp=/mnt/cloudstorage &&
-pct set 121 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup &&
-pct set 121 -mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books &&
-pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
-pct set 121 -mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
-```
-
-### 5.04 Unprivileged container mapping - Ubuntu 18.04
-To change the Syncthing container mapping we change the container UID and GID in the file `/etc/pve/lxc/122.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
-
-```
-# User storm | Group homelab
-echo -e "lxc.idmap: u 0 100000 1606
-lxc.idmap: g 0 100000 100
-lxc.idmap: u 1606 1606 1
-lxc.idmap: g 100 100 1
-lxc.idmap: u 1607 101607 63929
-lxc.idmap: g 101 100101 65435
-# Below are our Synology NAS Group GID's (i.e homelab) in range from 65604 > 65704
-lxc.idmap: u 65604 65604 100
-lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/122.conf&&
-grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
-grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
-grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
-```
-
-### 5.05 Create new "storm" user - Ubuntu 18.04
-First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `>_ Shell` and type the following:
-```
-groupadd -g 65606 homelab &&
-useradd -u 1606 -g homelab -m storm
-```
-
-### 5.05 Installing Syncthing - Ubuntu 18.04
-The Syncthing package is available on the official repository which can easily be added by running the following commands on your terminal.
-
-First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
-
-```
-# Start by installing curl package & the apt-transport-https package 
-sudo apt update &&
-sudo apt install -y curl apt-transport-https gnupg2 &&
-# Add the release PGP keys & add the "stable" channel to your APT sources
-curl -s https://syncthing.net/release-key.txt | sudo apt-key add - &&
-echo "deb https://apt.syncthing.net/ syncthing release" > /etc/apt/sources.list.d/syncthing.list &&
-# Update system and install syncthing package
-sudo apt update &&
-sudo apt install -y syncthing &&
-# Check Syncthing version
-syncthing --version
-```
-At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
-
-### 5.06 Configuring Syncthing - Ubuntu 18.04
-Create systemd unit files to manage syncthing service.
-
-With the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
-```
-echo -e "[Unit]
-Description=Syncthing - Open Source Continuous File Synchronization for %I
-Documentation=man:syncthing(1)
-After=network.target
-
-[Service]
-User=%i
-ExecStart=/usr/bin/syncthing -no-browser -gui-address="192.168.80.122:8384" -no-restart -logflags=0
-Restart=on-failure
-SuccessExitStatus=3 4
-RestartForceExitStatus=3 4
-
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/syncthing@.service &&
-sleep 2 &&
-sudo systemctl daemon-reload &&
-sleep 2 &&
-sudo systemctl enable syncthing@storm &&
-sleep 2 &&
-sudo systemctl start syncthing@storm
-```
-
-### 5.07 Accessing Syncthing WebGUI
-The Syncthing admin GUI is started automatically by systemd and is available on https://192.168.80.122:8384/.
