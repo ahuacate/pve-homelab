@@ -515,6 +515,29 @@ sed -i 's|<theme>.*</theme>|<theme>dark</theme>|g' /home/storm/.config/syncthing
 sudo systemctl start syncthing@storm
 ```
 
+### 4.10 Edit your Network Firewall
+Syncthing requires you to open the following ports for incoming and outgoing traffic:
+*  Port 22000/TCP (or the actual listening port if you have changed the Sync Protocol Listen Address setting.);
+*  Port 21027/UDP (for discovery broadcasts on IPv4 and multicasts on IPv6).
+
+Below are instructions for a UniFi controller `Settings` > `Routing & Firewall` > `Port Forwarding` and look for `+ Create New Port Forward Rule` and fill out the form details as shown below:
+
+| Port Forwarding| Value | Notes
+| :--- | :--- | :---
+| **Create New Port Forward Rule**
+| Name | `Syncthing - listening` |
+| Enabled | `☑` Enable this port forward rule |
+| From | `☑` Anywhere `☐` Limited |
+| Port | `22000`
+| Forward IP | `192.168.80.122`
+| Forward Port | `22000`
+| Protocol | `☐` Both `☑` TCP `☐` UDP
+| Logs | `☐` Enable Logging
+
+And click `Save`.
+
+
+
 ### 4.10 Accessing Syncthing WebGUI
 The Syncthing admin GUI is started automatically by systemd and is available on https://192.168.80.122:8384/.
 
