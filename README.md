@@ -536,7 +536,7 @@ Below are instructions for a UniFi controller `Settings` > `Routing & Firewall` 
 
 And click `Save`.
 
-
+![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-lxc-homelab/master/images/syncthing-listening.png)
 
 ### 4.10 Accessing Syncthing WebGUI
 The Syncthing admin GUI is started automatically by systemd and is available on https://192.168.80.122:8384/.
