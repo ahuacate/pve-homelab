@@ -11,6 +11,7 @@ Network Prerequisites are:
 
 Other Prerequisites are:
 - [x] Synology NAS, or linux variant of a NAS, is fully configured as per [SYNOBUILD](https://github.com/ahuacate/synobuild#synobuild)
+- [x] UniFi network is fully configured as per [UNIFIBUILD](https://github.com/ahuacate/unifibuild#unifi-build)
 - [x] Proxmox node fully configured as per [PROXMOX-NODE BUILDING](https://github.com/ahuacate/proxmox-node/blob/master/README.md#proxmox-node-building)
 - [x] pfSense is fully configured on typhoon-01 including both OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
 
