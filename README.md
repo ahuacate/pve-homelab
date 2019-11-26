@@ -52,7 +52,7 @@ Tasks to be performed are:
 ## About LXC Homelab Installations
 This page is about installing Proxmox LXC's and VM's for your homelab network. Software tools like PiHole, cloud storage and stuff.
 
-Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download the following templates:
+Again we build our LXC's on Unbuntu 18.04. Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download the following templates:
 *  `ubuntu-18.04-standard`.
 
 ## 1.00 Unprivileged LXC Containers and file permissions
