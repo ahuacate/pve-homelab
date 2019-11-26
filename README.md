@@ -15,10 +15,38 @@ Other Prerequisites are:
 - [x] pfSense is fully configured on typhoon-01 including both OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
 
 Tasks to be performed are:
-- [ ] 1.00 Unprivileged LXC Containers and file permissions
-- [ ] 2.00 PiHole LXC - Ubuntu 18.04
-- [ ] 3.00 UniFi Controller - Ubuntu 18.04
-- [ ] 4.00 NextCloud LXC
+- [About LXC Homelab Installations](#about-lxc-homelab-installations)
+- [1.00 Unprivileged LXC Containers and file permissions](#100-unprivileged-lxc-containers-and-file-permissions)
+	- [1.01 Unprivileged container mapping - homelab](#101-unprivileged-container-mapping---homelab)
+	- [1.02 Allow a LXC to perform mapping on the Proxmox host - homelab](#102-allow-a-lxc-to-perform-mapping-on-the-proxmox-host---homelab)
+	- [1.03 Create a newuser `storm` in a LXC](#103-create-a-newuser-storm-in-a-lxc)
+- [2.00 PiHole LXC - Ubuntu 18.04](#200-pihole-lxc---ubuntu-1804)
+	- [2.01 Create a Ubuntu 18.04 LXC for PiHole - Ubuntu 18.04](#201-create-a-ubuntu-1804-lxc-for-pihole---ubuntu-1804)
+	- [2.02 Install PiHole - Ubuntu 18.04](#202-install-pihole---ubuntu-1804)
+	- [2.03 Reset your PiHole webadmin password - Ubuntu 18.04](#203-reset-your-pihole-webadmin-password---ubuntu-1804)
+	- [2.04 Enable DNSSEC - Ubuntu 18.04](#204-enable-dnssec---ubuntu-1804)
+- [3.00 UniFi Controller - Ubuntu 18.04](#300-unifi-controller---ubuntu-1804)
+	- [3.01 Create a Ubuntu 18.04 LXC for UniFi Controller - Ubuntu 18.04](#301-create-a-ubuntu-1804-lxc-for-unifi-controller---ubuntu-1804)
+	- [3.02 Setup UniFi Mount Points - Ubuntu 18.04](#302-setup-unifi-mount-points---ubuntu-1804)
+	- [3.03 Unprivileged container mapping - Ubuntu 18.04](#303-unprivileged-container-mapping---ubuntu-1804)
+	- [3.04 Create new "storm" user - Ubuntu 18.04](#304-create-new-storm-user---ubuntu-1804)
+	- [3.05 Install UniFi - Ubuntu 18.04](#305-install-unifi---ubuntu-1804)
+	- [3.06 Move the UniFi Controller to your LXC Instance - Ubuntu 18.04](#306-move-the-unifi-controller-to-your-lxc-instance---ubuntu-1804)
+	- [3.07 Patches & Fixes](#307-patches--fixes)
+- [4.00 Syncthing - Ubuntu 18.04](#400-syncthing---ubuntu-1804)
+	- [4.01 Download the NextCloud LXC template - Ubuntu 18.04](#401-download-the-nextcloud-lxc-template---ubuntu-1804)
+	- [4.02 Create the Syncthing LXC - Ubuntu 18.04](#402-create-the-syncthing-lxc---ubuntu-1804)
+	- [4.03 Setup Nextcloud Mount Points - Ubuntu 18.04](#403-setup-nextcloud-mount-points---ubuntu-1804)
+	- [4.04 Unprivileged container mapping - Ubuntu 18.04](#404-unprivileged-container-mapping---ubuntu-1804)
+	- [4.05 Create Syncthing default and user folders on your NAS - Ubuntu 18.04](#405-create-syncthing-default-and-user-folders-on-your-nas---ubuntu-1804)
+	- [4.06 Create new "storm" user - Ubuntu 18.04](#406-create-new-storm-user---ubuntu-1804)
+	- [4.07 Installing Syncthing - Ubuntu 18.04](#407-installing-syncthing---ubuntu-1804)
+	- [4.08 Configuring Syncthing - Ubuntu 18.04](#408-configuring-syncthing---ubuntu-1804)
+	- [4.09 Edit Syncthing configuration file - Ubuntu 18.04](#409-edit-syncthing-configuration-file---ubuntu-1804)
+	- [4.10 Edit your Network Firewall](#410-edit-your-network-firewall)
+	- [4.10 Accessing Syncthing WebGUI](#410-accessing-syncthing-webgui)
+
+
 
 ## About LXC Homelab Installations
 This page is about installing Proxmox LXC's and VM's for your homelab network. Software tools like PiHole, cloud storage and stuff.
@@ -265,7 +293,7 @@ pct set 251 -mp0 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 ### 3.03 Unprivileged container mapping - Ubuntu 18.04
-To change the Jellyfin container mapping we change the container UID and GID in the file `/etc/pve/lxc/111.conf`. Simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following:
+To change the UniFi container mapping we change the container UID and GID in the file `/etc/pve/lxc/251.conf`. Simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following:
 
 ```
 # User storm | Group homelab
