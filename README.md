@@ -306,7 +306,7 @@ lxc.idmap: u 1607 101607 63929
 lxc.idmap: g 101 100101 65435
 # Below are our Synology NAS Group GID's (i.e homelab) in range from 65604 > 65704
 lxc.idmap: u 65604 65604 100
-lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/251.conf&&
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/251.conf &&
 grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
 grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
 grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
