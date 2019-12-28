@@ -58,7 +58,6 @@ Tasks to be performed are:
 	- [5.02 Create the Nextcloud LXC - Ubuntu 18.04](#502-create-the-nextcloud-lxc---ubuntu-1804)
 	- [5.03 Setup Nextcloud Mount Points - Ubuntu 18.04](#503-setup-nextcloud-mount-points---ubuntu-1804)
 	- [5.04 Unprivileged container mapping - Ubuntu 18.04](#504-unprivileged-container-mapping---ubuntu-1804)
-- [Allow LXC to perform mapping on the Proxmox Host](#allow-lxc-to-perform-mapping-on-the-proxmox-host)
 	- [5.05 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04](#505-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade---ubuntu-1804)
 	- [5.06 Container Update &  Upgrade - Ubuntu 18.04](#506-container-update---upgrade---ubuntu-1804)
 	- [5.07 Install PHP - Ubuntu 18.04](#507-install-php---ubuntu-1804)
@@ -68,7 +67,6 @@ Tasks to be performed are:
 	- [5.11 Create Nextclouds MySQL Database and User](#511-create-nextclouds-mysql-database-and-user)
 	- [5.12 Configure Apache Web Server - Ubuntu 18.04](#512-configure-apache-web-server---ubuntu-1804)
 	- [5.13 Setup Nextcloud](#513-setup-nextcloud)
-
 
 
 
@@ -720,11 +718,11 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 ```
 
 ### 5.04 Unprivileged container mapping - Ubuntu 18.04
-
 Underdevelopment so ignore - for unprivileged CT.
-To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.~~
-Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following
+To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.
 
+Simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following
+```
 echo -e "lxc.idmap: u 1 100000 32
 lxc.idmap: g 1 100000 32
 lxc.idmap: u 0 0 1
@@ -738,6 +736,7 @@ grep -qxF 'root:33:1' /etc/subuid || echo 'root:33:1' >> /etc/subuid &&
 grep -qxF 'root:33:1' /etc/subgid || echo 'root:33:1' >> /etc/subgid &&
 grep -qxF 'root:0:1' /etc/subuid || echo 'root:0:1' >> /etc/subuid &&
 grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid
+```
 
 ### 5.05 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
 First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Shell` and type the following:
@@ -758,7 +757,6 @@ apt-get upgrade -y
 First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type your root login and password.
 
 The first step, to set up Nextcloud you must have a running LAMP server on your Ubuntu 18.04 LXC system. The following commands will install it. Type the following:
-
 ```
 # apt-get update
 sudo apt-get update -y &&
@@ -769,21 +767,18 @@ You will be prompted during the installation whether to `Restart services during
 
 ### 5.08 Install Apache Web Server
 Here we install and configure a Apache HTTP Server. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type the following:
-
 ```
 sudo apt-get install -y apache2 libapache2-mod-php
 ```
 
 ### 5.09 Install MySQL database server.
 NextCloud can use MySQL, MariaDB, PostgreSQL or SQLite database to store its data. In this guide, we will use MySQL database server. Type the following:
-
 ```
 sudo apt-get install -y mysql-server
 ```
 
 ### 5.10 Download the Nextcloud 17.0.0 Archive - Ubuntu 18.04
 Here we download and install the latest Nextcloud version. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and login and type the following:
-
 ```
 # Install unzip
 sudo apt-get install -y unzip &&
