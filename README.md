@@ -23,29 +23,52 @@ Tasks to be performed are:
 	- [1.03 Create a newuser `storm` in a LXC](#103-create-a-newuser-storm-in-a-lxc)
 - [2.00 PiHole LXC - Ubuntu 18.04](#200-pihole-lxc---ubuntu-1804)
 	- [2.01 Create a Ubuntu 18.04 LXC for PiHole - Ubuntu 18.04](#201-create-a-ubuntu-1804-lxc-for-pihole---ubuntu-1804)
-	- [2.02 Install PiHole - Ubuntu 18.04](#202-install-pihole---ubuntu-1804)
-	- [2.03 Reset your PiHole webadmin password - Ubuntu 18.04](#203-reset-your-pihole-webadmin-password---ubuntu-1804)
-	- [2.04 Enable DNSSEC - Ubuntu 18.04](#204-enable-dnssec---ubuntu-1804)
+	- [2.02 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04](#202-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade---ubuntu-1804)
+	- [2.03 Container Update &  Upgrade - Ubuntu 18.04](#203-container-update---upgrade---ubuntu-1804)
+	- [2.04 Install PiHole - Ubuntu 18.04](#204-install-pihole---ubuntu-1804)
+	- [2.05 Reset your PiHole webadmin password - Ubuntu 18.04](#205-reset-your-pihole-webadmin-password---ubuntu-1804)
+	- [2.06 Enable DNSSEC - Ubuntu 18.04](#206-enable-dnssec---ubuntu-1804)
 - [3.00 UniFi Controller - Ubuntu 18.04](#300-unifi-controller---ubuntu-1804)
 	- [3.01 Create a Ubuntu 18.04 LXC for UniFi Controller - Ubuntu 18.04](#301-create-a-ubuntu-1804-lxc-for-unifi-controller---ubuntu-1804)
 	- [3.02 Setup UniFi Mount Points - Ubuntu 18.04](#302-setup-unifi-mount-points---ubuntu-1804)
 	- [3.03 Unprivileged container mapping - Ubuntu 18.04](#303-unprivileged-container-mapping---ubuntu-1804)
-	- [3.04 Create new "storm" user - Ubuntu 18.04](#304-create-new-storm-user---ubuntu-1804)
-	- [3.05 Install UniFi - Ubuntu 18.04](#305-install-unifi---ubuntu-1804)
-	- [3.06 Move the UniFi Controller to your LXC Instance - Ubuntu 18.04](#306-move-the-unifi-controller-to-your-lxc-instance---ubuntu-1804)
-	- [3.07 Patches & Fixes](#307-patches--fixes)
+	- [3.04 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04](#304-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade---ubuntu-1804)
+	- [3.05 Container Update &  Upgrade - Ubuntu 18.04](#305-container-update---upgrade---ubuntu-1804)
+	- [3.06 Create new "storm" user - Ubuntu 18.04](#306-create-new-storm-user---ubuntu-1804)
+	- [3.07 Install UniFi - Ubuntu 18.04](#307-install-unifi---ubuntu-1804)
+	- [3.08 Move the UniFi Controller to your LXC Instance - Ubuntu 18.04](#308-move-the-unifi-controller-to-your-lxc-instance---ubuntu-1804)
+	- [3.09 Patches & Fixes](#309-patches--fixes)
 - [4.00 Syncthing - Ubuntu 18.04](#400-syncthing---ubuntu-1804)
 	- [4.01 Download the NextCloud LXC template - Ubuntu 18.04](#401-download-the-nextcloud-lxc-template---ubuntu-1804)
 	- [4.02 Create the Syncthing LXC - Ubuntu 18.04](#402-create-the-syncthing-lxc---ubuntu-1804)
 	- [4.03 Setup Nextcloud Mount Points - Ubuntu 18.04](#403-setup-nextcloud-mount-points---ubuntu-1804)
 	- [4.04 Unprivileged container mapping - Ubuntu 18.04](#404-unprivileged-container-mapping---ubuntu-1804)
 	- [4.05 Create Syncthing default and user folders on your NAS - Ubuntu 18.04](#405-create-syncthing-default-and-user-folders-on-your-nas---ubuntu-1804)
-	- [4.06 Create new "storm" user - Ubuntu 18.04](#406-create-new-storm-user---ubuntu-1804)
-	- [4.07 Installing Syncthing - Ubuntu 18.04](#407-installing-syncthing---ubuntu-1804)
-	- [4.08 Configuring Syncthing - Ubuntu 18.04](#408-configuring-syncthing---ubuntu-1804)
-	- [4.09 Edit Syncthing configuration file - Ubuntu 18.04](#409-edit-syncthing-configuration-file---ubuntu-1804)
-	- [4.10 Edit your Network Firewall](#410-edit-your-network-firewall)
-	- [4.10 Accessing Syncthing WebGUI](#410-accessing-syncthing-webgui)
+	- [4.06 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04](#406-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade---ubuntu-1804)
+	- [4.07 Container Update &  Upgrade - Ubuntu 18.04](#407-container-update---upgrade---ubuntu-1804)
+	- [4.08 Create new "storm" user - Ubuntu 18.04](#408-create-new-storm-user---ubuntu-1804)
+	- [4.09 Installing Syncthing - Ubuntu 18.04](#409-installing-syncthing---ubuntu-1804)
+	- [4.10 Configuring Syncthing - Ubuntu 18.04](#410-configuring-syncthing---ubuntu-1804)
+	- [4.11 Edit Syncthing configuration file - Ubuntu 18.04](#411-edit-syncthing-configuration-file---ubuntu-1804)
+	- [4.12 Edit your Network Firewall](#412-edit-your-network-firewall)
+	- [4.13 Accessing Syncthing WebGUI](#413-accessing-syncthing-webgui)
+- [---](#---)
+- [5.00 NextCloud - Ubuntu 18.04 - UNDER DEVELOPMENT](#500-nextcloud---ubuntu-1804---under-development)
+	- [5.01 Download the NextCloud LXC template - Ubuntu 18.04](#501-download-the-nextcloud-lxc-template---ubuntu-1804)
+	- [5.02 Create the Nextcloud LXC - Ubuntu 18.04](#502-create-the-nextcloud-lxc---ubuntu-1804)
+	- [5.03 Setup Nextcloud Mount Points - Ubuntu 18.04](#503-setup-nextcloud-mount-points---ubuntu-1804)
+	- [5.04 Unprivileged container mapping - Ubuntu 18.04](#504-unprivileged-container-mapping---ubuntu-1804)
+- [Allow LXC to perform mapping on the Proxmox Host](#allow-lxc-to-perform-mapping-on-the-proxmox-host)
+	- [5.05 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04](#505-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade---ubuntu-1804)
+	- [5.06 Container Update &  Upgrade - Ubuntu 18.04](#506-container-update---upgrade---ubuntu-1804)
+	- [5.07 Install PHP - Ubuntu 18.04](#507-install-php---ubuntu-1804)
+	- [5.08 Install Apache Web Server](#508-install-apache-web-server)
+	- [5.09 Install MySQL database server.](#509-install-mysql-database-server)
+	- [5.10 Download the Nextcloud 17.0.0 Archive - Ubuntu 18.04](#510-download-the-nextcloud-1700-archive---ubuntu-1804)
+	- [5.11 Create Nextclouds MySQL Database and User](#511-create-nextclouds-mysql-database-and-user)
+	- [5.12 Configure Apache Web Server - Ubuntu 18.04](#512-configure-apache-web-server---ubuntu-1804)
+	- [5.13 Setup Nextcloud](#513-setup-nextcloud)
+
 
 
 
@@ -173,7 +196,22 @@ Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and t
 pct create 254 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname pihole --cpulimit 1 --cpuunits 1024 --memory 256 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.254/24,type=veth --ostype ubuntu --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
 ```
 
-### 2.02 Install PiHole - Ubuntu 18.04
+### 2.02 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 254 (pihole) with the Proxmox web interface go to `typhoon-01` > `254 (pihole)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `254 (pihole)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
+
+### 2.03 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `254 (pihole)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 2.04 Install PiHole - Ubuntu 18.04
 First Start your `254 (pihole)` LXC container using the web interface `Datacenter` > `254 (pihole)` > `Start`. Then login into your `254 (pihole)` LXC by going to  `Datacenter` > `254 (pihole)` > `>_ Console and logging in with username `root` and the password you created in the previous step 1.1.
 
 Now using the web interface `Datacenter` > `254 (pihole)` > `>_ Console` run the following command:
@@ -183,7 +221,6 @@ sudo apt update &&
 sudo apt install -y curl &&
 curl -sSL https://install.pi-hole.net | bash
 ```
-At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
 The PiHole installation package will download and the installation will commence. Follow the prompts making sure to enter the prompts and field values as follows:
 
@@ -206,14 +243,14 @@ The PiHole installation package will download and the installation will commence
 
 Your installation should be complete.
 
-### 2.03 Reset your PiHole webadmin password - Ubuntu 18.04
+### 2.05 Reset your PiHole webadmin password - Ubuntu 18.04
 Now reset the web admin password using the web interface `Datacenter` > `254 (pihole)` > `>_ Console` run the following command:
 ```
 pihole -a -p
 ```
 You can now login to your PiHole server using your preferred web browser with the following URL http://192.168.1.254/admin/index.php
 
-### 2.04 Enable DNSSEC - Ubuntu 18.04
+### 2.06 Enable DNSSEC - Ubuntu 18.04
 You can enable DNSSEC when using Cloudfare which support DNSSEC. Using the PiHole webadmin URL http://192.168.1.254/admin/index.php go to `Settings` > `DNS Tab` and enable `USE DNSSEC` under Advanced DNS Settings. Click `Save`.
 
 
@@ -313,20 +350,30 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1606:1' /etc/subuid || echo 'root:1606:1' >> /etc/subuid
 ```
 
-### 3.04 Create new "storm" user - Ubuntu 18.04
-First start LXC 251 (unifi) with the Proxmox web interface go to `typhoon-01` > `251 (unifi)` > `START`.
+### 3.04 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 251 (unifi) with the Proxmox web interface go to `typhoon-01` > `251 (unifi)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `251 (unifi)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
 
-Then with the Proxmox web interface go to `typhoon-01` > `251 (unifi)` > `>_ Shell` and type the following:
+### 3.05 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `251 (unifi)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 3.06 Create new "storm" user - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `251 (unifi)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65606 homelab &&
 useradd -u 1606 -g homelab -m storm
 ```
 
-### 3.05 Install UniFi - Ubuntu 18.04
-First Start your `251 (unifi)` LXC container using the web interface `Datacenter` > `251 (unifi)` > `Start`. Then login into your `251 (unifi)` LXC by going to  `Datacenter` > `251 (unifi)` > `>_ Console` and logging in with username `root` and the password you created in the previous step 2.01.
-
-Now using the web interface `Datacenter` > `251 (unifi)` > `>_ Console` run the following command:
-
+### 3.07 Install UniFi - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `251 (unifi)` > `>_ Shell` and type the following:
 ```
 # Install required packages
 sudo apt update && sudo apt install -y ca-certificates apt-transport-https &&
@@ -340,9 +387,8 @@ echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse" 
 #  Install and upgrade the UniFi controller
 sudo apt update && sudo apt install -y unifi
 ```
-At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 3.06 Move the UniFi Controller to your LXC Instance - Ubuntu 18.04
+### 3.08 Move the UniFi Controller to your LXC Instance - Ubuntu 18.04
 You can backup the current configuration and move it to a different computer.
 
 Take a backup of the existing controller using the UniFi WebGUI interface and go to `Settings` > `Maintenance` > `Backup` > `Download Backup`. This will create a `xxx.unf` file format to be saved at your selected destination on your PC (i.e Downloads).
@@ -351,7 +397,7 @@ Now on your Proxmox UniFi LXC, https://192.168.1.251:8443/ , you must restore th
 
 But make sure when you are restoring the backup you Have closed the previous UniFi Controller server and software because you cannot manage the APs by two controller at a time.
 
-### 3.07 Patches & Fixes
+### 3.09 Patches & Fixes
 Read UniFi's instructions [HERE](https://help.ubnt.com/hc/en-us/articles/220066768-UniFi-How-to-Install-and-Update-via-APT-on-Debian-or-Ubuntu).
 
 
@@ -468,7 +514,22 @@ mkdir -m 775 -p {/mnt/pve/cyclone-01-cloudstorage/syncthing,/mnt/pve/cyclone-01-
 chown -R 1606:65606 {/mnt/pve/cyclone-01-cloudstorage/syncthing,/mnt/pve/cyclone-01-cloudstorage/syncthing/Sync}
 ```
 
-### 4.06 Create new "storm" user - Ubuntu 18.04
+### 4.06 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
+
+### 4.07 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `122 (syncthing)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 4.08 Create new "storm" user - Ubuntu 18.04
 First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `>_ Shell` and type the following:
@@ -477,7 +538,7 @@ groupadd -g 65606 homelab &&
 useradd -u 1606 -g homelab -m storm
 ```
 
-### 4.07 Installing Syncthing - Ubuntu 18.04
+### 4.09 Installing Syncthing - Ubuntu 18.04
 The Syncthing package is available on the official repository which can easily be added by running the following commands on your terminal.
 
 First start LXC 122 (syncthing) with the Proxmox web interface go to `typhoon-01` > `122 (syncthing)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
@@ -495,9 +556,8 @@ sudo apt install -y syncthing &&
 # Check Syncthing version
 syncthing --version
 ```
-At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 4.08 Configuring Syncthing - Ubuntu 18.04
+### 4.10 Configuring Syncthing - Ubuntu 18.04
 Create systemd unit files to manage syncthing service.
 
 With the Proxmox web interface go to `typhoon-01` > `122 (syncting)` >` >_ Shell` and type the following:
@@ -524,8 +584,7 @@ sleep 2 &&
 sudo systemctl start syncthing@storm
 ```
 
-
-### 4.09 Edit Syncthing configuration file - Ubuntu 18.04
+### 4.11 Edit Syncthing configuration file - Ubuntu 18.04
 The Syncthing configuration file needs to have its defaults changed - most important is default storage to your NAS. In this step we are going to change or add the following settings:
 *  `Default Folder Path` changed to /mnt/cloudstorage/syncthing;
 *  GUI changed to dark setting;
@@ -544,7 +603,7 @@ sed -i 's|<theme>.*</theme>|<theme>dark</theme>|g' /home/storm/.config/syncthing
 sudo systemctl start syncthing@storm
 ```
 
-### 4.10 Edit your Network Firewall
+### 4.12 Edit your Network Firewall
 Syncthing requires you to open the following ports for incoming and outgoing traffic:
 *  Port 22000/TCP (or the actual listening port if you have changed the Sync Protocol Listen Address setting.);
 *  Port 21027/UDP (for discovery broadcasts on IPv4 and multicasts on IPv6).
@@ -567,19 +626,18 @@ And click `Save`.
 
 ![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-lxc-homelab/master/images/syncthing-listening.png)
 
-### 4.10 Accessing Syncthing WebGUI
+### 4.13 Accessing Syncthing WebGUI
 The Syncthing admin GUI is started automatically by systemd and is available on https://192.168.80.122:8384/.
 
 ---
 ---
-# Under Development
 
-## 4.00 NextCloud - Ubuntu 18.04
+## 5.00 NextCloud - Ubuntu 18.04 - UNDER DEVELOPMENT
 Nextcloud helps store your files, folders, contacts, photo galleries, calendars and more on a server of your choosing. Access that folder from your mobile device, your desktop, or a web browser. Access your data wherever you are, when you need it.
 
 But there's a issue. Nextcloud data directory, the folder where each Nextcloud user account stores data (basically user home), cannot be moved to the NAS due to UID GID issues with NFS. 
 
-### 4.01 Download the NextCloud LXC template - Ubuntu 18.04
+### 5.01 Download the NextCloud LXC template - Ubuntu 18.04
 
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface Datacenter > typhoon-01 >Local (typhoon-01) > Content > Templates select ubuntu-18.04-standard LXC and click Download.
 
@@ -588,7 +646,7 @@ Or use a Proxmox typhoon-01 CLI >_ Shell and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 4.02 Create the Nextcloud LXC - Ubuntu 18.04
+### 5.02 Create the Nextcloud LXC - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -648,7 +706,7 @@ pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 121 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nextcloud --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=80,firewall=1,gw=192.168.80.5,ip=192.168.80.121/24,type=veth --ostype debian --rootfs typhoon-share:10 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
-### 4.03 Setup Nextcloud Mount Points - Ubuntu 18.04
+### 5.03 Setup Nextcloud Mount Points - Ubuntu 18.04
 If you used Script (B) in Section 3.02 then you have no Moint Points.
 
 Please note your Proxmox Nextcloud LXC MUST BE in the shutdown state before proceeding.
@@ -661,7 +719,7 @@ pct set 121 -mp2 /mnt/pve/cyclone-01-books,mp=/mnt/books &&
 pct set 121 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio 
 ```
 
-### 4.04 Unprivileged container mapping - Ubuntu 18.04
+### 5.04 Unprivileged container mapping - Ubuntu 18.04
 
 Underdevelopment so ignore - for unprivileged CT.
 To create container mapping we change the container UID and GID in the file /etc/pve/lxc/container-id.conf after you create a new container. Here we are mapping users root (0) and www-data (33) so we set the Nextcloud data folder on the Synology NAS.~~
@@ -681,8 +739,22 @@ grep -qxF 'root:33:1' /etc/subgid || echo 'root:33:1' >> /etc/subgid &&
 grep -qxF 'root:0:1' /etc/subuid || echo 'root:0:1' >> /etc/subuid &&
 grep -qxF 'root:0:1' /etc/subgid || echo 'root:0:1' >> /etc/subgid
 
+### 5.05 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
 
-### 4.05 Install PHP - Ubuntu 18.04
+### 5.06 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `121 (nextcloud)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 5.07 Install PHP - Ubuntu 18.04
 First start LXC 121 (nextcloud) with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type your root login and password.
 
 The first step, to set up Nextcloud you must have a running LAMP server on your Ubuntu 18.04 LXC system. The following commands will install it. Type the following:
@@ -695,21 +767,21 @@ sudo apt-get install -y php-cli php-fpm php-json php-intl php-imagick php-pdo ph
 ```
 You will be prompted during the installation whether to `Restart services during package upgrades without asking?`. Select `<Yes>`.
 
-### 4.07 Install Apache Web Server
+### 5.08 Install Apache Web Server
 Here we install and configure a Apache HTTP Server. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type the following:
 
 ```
 sudo apt-get install -y apache2 libapache2-mod-php
 ```
 
-### 4.06 Install MySQL database server.
+### 5.09 Install MySQL database server.
 NextCloud can use MySQL, MariaDB, PostgreSQL or SQLite database to store its data. In this guide, we will use MySQL database server. Type the following:
 
 ```
 sudo apt-get install -y mysql-server
 ```
 
-### 4.08 Download the Nextcloud 17.0.0 Archive - Ubuntu 18.04
+### 5.10 Download the Nextcloud 17.0.0 Archive - Ubuntu 18.04
 Here we download and install the latest Nextcloud version. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and login and type the following:
 
 ```
@@ -727,7 +799,7 @@ sudo chmod -R 755 /var/www/html/nextcloud &&
 sudo rm -f /tmp/latest.zip
 ```
 
-### 4.09 Create Nextclouds MySQL Database and User
+### 5.11 Create Nextclouds MySQL Database and User
 After the installation of the database server, you need to create a database and user for Nextcloud.
 
 This step requires user input to enter passwords. Its best to create and record two different strong passwords (i.e oTL&9qe/9Y&RV style) ready for the Nextcloud installation.
@@ -756,7 +828,7 @@ QUIT;
 ```
 Now type `reboot -h` to restart the LXC before proceeding to the next step.
 
-### 4.10 Configure Apache Web Server - Ubuntu 18.04
+### 5.12 Configure Apache Web Server - Ubuntu 18.04
 Here we configure a Apache HTTP Server. With the Proxmox web interface go to `typhoon-01` > `121 (nextcloud)` > `>_ Console` and type the following:
 
 ```
@@ -784,11 +856,9 @@ sudo a2enmod rewrite dir mime env headers &&
 sudo systemctl restart apache2
 ```
 
-### 4.11 Setup Nextcloud
+### 5.13 Setup Nextcloud
 Browse to http://192.168.80.121 to start using Nextcloud. You may receive a Firefox warning **Warning: Potential Security Risk Ahead** which you are to ignore. Simply click `Advanced` then `Accept the Risk and Continue` to proceed to your Nextcloud login.
 
 ### 4.12 Patches and Fixes
 sudo -u www-data ls -lisa /mnt/nextcloud/data
 sudo -u www-data ls -lisa /var/www/html/nextcloud/data
-
-
