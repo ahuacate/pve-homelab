@@ -36,7 +36,7 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
     - [1.1. Unprivileged CTs and File Permissions](#11-unprivileged-cts-and-file-permissions)
         - [1.1.1. Unprivileged container mapping - homelab](#111-unprivileged-container-mapping---homelab)
         - [1.1.2. Allow a LXC to perform mapping on the Proxmox host - homelab](#112-allow-a-lxc-to-perform-mapping-on-the-proxmox-host---homelab)
-        - [1.1.3. Create a newuser `storm` in a LXC](#113-create-a-newuser-storm-in-a-lxc)
+        - [1.1.3. Create a newuser `home` in a LXC](#113-create-a-newuser-home-in-a-lxc)
 - [2. PiHole CT](#2-pihole-ct)
     - [2.1. Installation](#21-installation)
     - [2.2. Setup PiHole](#22-setup-pihole)
@@ -105,7 +105,7 @@ The above edits add an ID map range from 65604 > 65704 in the container to the s
 
 The above edit is done automatically in our Easy Script.
 
-### 1.1.3. Create a newuser `storm` in a LXC
+### 1.1.3. Create a newuser `home` in a LXC
 Our PVE User `home` and Group `homelab` are the defaults in all our Homelab CTs. This means all new files created by our Homelab CTs have a common UID and GUID so NAS file creation, ownership and access permissions are fully maintained within the Group `homelab`.
 
 The Linux User and Group settings we use in all MediaLab CTs are:
@@ -113,12 +113,12 @@ The Linux User and Group settings we use in all MediaLab CTs are:
 (A) To create a user without a Home folder
 ```
 groupadd -g 65606 homelab &&
-useradd -u 1606 -g homelab -M storm
+useradd -u 1606 -g homelab -M home
 ```
 (B) To create a user with a Home folder
 ```
 groupadd -g 65606 homelab &&
-useradd -u 1606 -g homelab -m storm
+useradd -u 1606 -g homelab -m home
 ```
 The above change is done automatically in our Easy Script.
 
