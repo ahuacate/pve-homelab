@@ -69,7 +69,7 @@ EOF
 pct push $CTID ${TEMP_DIR}/update-pihole.timer /etc/systemd/system/update-pihole.timer
 
 # Enable systemd timer
-pct exec $CTID -- bash -c 'sudo systemctl daemon-reload'
-pct exec $CTID -- bash -c 'sudo systemctl enable --now update-pihole.timer'
+pct exec $CTID -- bash -c 'sudo systemctl --quiet daemon-reload'
+pct exec $CTID -- bash -c 'sudo systemctl --quiet enable --now update-pihole.timer'
 
 #---- Finish Line ------------------------------------------------------------------
