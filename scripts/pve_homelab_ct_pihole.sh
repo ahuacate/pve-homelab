@@ -137,9 +137,6 @@ section "Install ${CT_HOSTNAME_VAR^}"
 
 #---- Prerequisites
 
-# Install pre-requisite apps
-apt-get install php-curl -yqq
-
 # Create Hash Password
 PIHOLE_PASSWORD="$(echo -n ${APP_PASSWORD} | sha256sum | awk '{printf "%s",$1 }' | sha256sum | awk '{printf "%s",$1 }')"
 

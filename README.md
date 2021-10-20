@@ -36,13 +36,18 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
     - [1.1. Unprivileged CTs and File Permissions](#11-unprivileged-cts-and-file-permissions)
         - [1.1.1. Unprivileged container mapping - homelab](#111-unprivileged-container-mapping---homelab)
         - [1.1.2. Allow a LXC to perform mapping on the Proxmox host - homelab](#112-allow-a-lxc-to-perform-mapping-on-the-proxmox-host---homelab)
-        - [1.1.3. Create a newuser `home` in a LXC](#113-create-a-newuser-home-in-a-lxc)
+        - [1.1.3. Create a newuser 'home' in a LXC](#113-create-a-newuser-home-in-a-lxc)
 - [2. PiHole CT](#2-pihole-ct)
     - [2.1. Installation](#21-installation)
     - [2.2. Setup PiHole](#22-setup-pihole)
-- [3. UniFi Controller CT](#3-unifi-controller-ct)
+- [3. ddclient CT](#3-ddclient-ct)
     - [3.1. Installation](#31-installation)
-- [4. Patches and Fixes](#4-patches-and-fixes)
+    - [3.2. Maintenance](#32-maintenance)
+        - [3.2.1. Force Dynamic DNS service](#321-force-dynamic-dns-service)
+        - [3.2.2. Reconfigure ddclient](#322-reconfigure-ddclient)
+- [4. UniFi Controller CT](#4-unifi-controller-ct)
+    - [4.1. Installation](#41-installation)
+- [5. Patches and Fixes](#5-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -105,19 +110,19 @@ The above edits add an ID map range from 65604 > 65704 in the container to the s
 
 The above edit is done automatically in our Easy Script.
 
-### 1.1.3. Create a newuser `home` in a LXC
+### 1.1.3. Create a newuser 'home' in a LXC
 Our PVE User `home` and Group `homelab` are the defaults in all our Homelab CTs. This means all new files created by our Homelab CTs have a common UID and GUID so NAS file creation, ownership and access permissions are fully maintained within the Group `homelab`.
 
 The Linux User and Group settings we use in all MediaLab CTs are:
 
 (A) To create a user without a Home folder
 ```
-groupadd -g 65606 homelab &&
+groupadd -g 65606 homelab
 useradd -u 1606 -g homelab -M home
 ```
 (B) To create a user with a Home folder
 ```
-groupadd -g 65606 homelab &&
+groupadd -g 65606 homelab
 useradd -u 1606 -g homelab -m home
 ```
 The above change is done automatically in our Easy Script.
@@ -140,11 +145,78 @@ Our PiHole installation presets all settings.
 
 ---
 
+# 3. ddclient CT
+ddclient is a Perl client used to update dynamic DNS entries for accounts on many dynamic DNS services.
 
-# 3. UniFi Controller CT
-Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+Dynamic DNS services currently supported include:
+```
+DynDNS.com  - See http://www.dyndns.com for details on obtaining a free account.
+Zoneedit    - See http://www.zoneedit.com for details.
+EasyDNS     - See http://www.easydns.com for details.
+NameCheap   - See http://www.namecheap.com for details
+DslReports  - See http://www.dslreports.com for details
+Sitelutions - See http://www.sitelutions.com for details
+Loopia      - See http://www.loopia.se for details
+Noip        - See http://www.noip.com/ for details
+Freedns     - See http://freedns.afraid.org/ for details
+ChangeIP    - See http://www.changeip.com/ for details
+nsupdate    - See nsupdate(1) and ddns-confgen(8) for details
+CloudFlare  - See https://www.cloudflare.com/ for details
+Google      - See http://www.google.com/domains for details
+Duckdns     - See https://duckdns.org/ for details
+Freemyip    - See https://freemyip.com for details
+woima.fi    - See https://woima.fi/ for details
+Yandex      - See https://domain.yandex.com/ for details
+DNS Made Easy - See https://dnsmadeeasy.com/ for details
+DonDominio  - See https://www.dondominio.com for details
+NearlyFreeSpeech.net - See https://www.nearlyfreespeech.net/services/dns for details
+OVH         - See https://www.ovh.com for details
+ClouDNS     - See https://www.cloudns.net
+dinahosting - See https://dinahosting.com
+Gandi       - See https://gandi.net
+dnsexit     - See https://dnsexit.com/ for details
+```
 
 ## 3.1. Installation
+Our Easy Script will create your ddclient CT. Open a account at any of the above providers ( Freedns is free ).
+
+Have your Dynamic DNS hosting service credentials ready. During the installation you are required to input your account credentials:
+
+* Username
+* Password
+* Server URL ( i.e hello.crabdance.com for a freedns.afraid.org account )
+
+Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
+
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/master/pve_homelab_ct_ddclient_installer.sh)"
+```
+
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+
+The native ddclient setup wizard will start in your terminal window. Select your Dynamic DNS service provider and input your credentials when prompted.
+
+## 3.2. Maintenance
+To manual update or reconfigure ddclient run the following SSH commands on your PVE host ( i.e pve-01 ).
+
+### 3.2.1. Force Dynamic DNS service
+```
+# Replace with your ddclient CTID (252)
+CTID=252
+pct exec ${CTID} -- bash -c 'ddclient -daemon=0 -debug -verbose -noquiet -force'
+```
+### 3.2.2. Reconfigure ddclient
+```
+# Replace with your ddclient CTID (252)
+CTID=252
+pct exec ${CTID} -- bash -c 'sudo dpkg-reconfigure ddclient'
+```
+
+---
+# 4. UniFi Controller CT
+Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+
+## 4.1. Installation
 Our Easy Script will create your PiHole CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
 
 ```
@@ -155,5 +227,5 @@ Follow our Easy Script installation prompts. We recommend you accept our default
 
 <hr>
 
-# 4. Patches and Fixes
+# 5. Patches and Fixes
 
