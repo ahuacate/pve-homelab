@@ -25,14 +25,6 @@ else
   exit 0
 fi
 
-# Installer cleanup
-function installer_cleanup () {
-rm -R ${REPO_TEMP}/common &> /dev/null
-rm -R ${REPO_TEMP}/${GIT_REPO} &> /dev/null
-rm ${REPO_TEMP}/common.tar.gz &> /dev/null
-rm ${REPO_TEMP}/${GIT_REPO}.tar.gz &> /dev/null
-}
-
 #---- Static Variables -------------------------------------------------------------
 
 # Git server

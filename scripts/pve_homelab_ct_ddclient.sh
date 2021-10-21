@@ -138,7 +138,11 @@ section "Install ${CT_HOSTNAME_VAR}"
 #---- Installing ddclient
 msg "Installing ddclient..."
 pct exec $CTID -- apt-get install ddclient -y
+echo
 
+msg "Perform a dynamic DNS test run..."
+pct exec ${CTID} -- bash -c 'ddclient -daemon=0 -debug -verbose -noquiet -force'
+echo
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status."
