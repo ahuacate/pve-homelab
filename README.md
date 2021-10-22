@@ -45,9 +45,12 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
     - [3.2. Maintenance](#32-maintenance)
         - [3.2.1. Force Dynamic DNS service](#321-force-dynamic-dns-service)
         - [3.2.2. Reconfigure ddclient](#322-reconfigure-ddclient)
-- [4. UniFi Controller CT](#4-unifi-controller-ct)
+- [4. Guacamole CT](#4-guacamole-ct)
     - [4.1. Installation](#41-installation)
-- [5. Patches and Fixes](#5-patches-and-fixes)
+    - [4.2. Setup Guacamole](#42-setup-guacamole)
+- [5. UniFi Controller CT](#5-unifi-controller-ct)
+    - [5.1. Installation](#51-installation)
+- [6. Patches and Fixes](#6-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -126,6 +129,8 @@ groupadd -g 65606 homelab
 useradd -u 1606 -g homelab -m home
 ```
 The above change is done automatically in our Easy Script.
+
+---
 
 # 2. PiHole CT
 PiHole is an internet tracker blocking application that acts as a DNS sinkhole. Its charter is to block advertisements, tracking domains, tracking cookies, and all those personal data mining collection companies.
@@ -213,10 +218,29 @@ pct exec ${CTID} -- bash -c 'sudo dpkg-reconfigure ddclient'
 ```
 
 ---
-# 4. UniFi Controller CT
-Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+# 4. Guacamole CT
+Apache Guacamole is a clientless remote desktop gateway. It supports standard protocols like VNC, RDP, and SSH. Once Guacamole is installed on a server, all you need to access your desktops is a web browser.
 
 ## 4.1. Installation
+This install uses the [MysticRyuujin](https://github.com/MysticRyuujin/guac-install) installation script. Thanks to [MysticRyuujin](https://github.com/MysticRyuujin/guac-install) for maintaining this script.
+
+Our Easy Script will create your Guacamole CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
+
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/master/pve_homelab_ct_guacamole_installer.sh)"
+```
+
+Follow our Easy Script installation prompts.
+
+## 4.2. Setup Guacamole
+In your web browser URL type `http://192.168.1.250:8080/guacamole`. The application's WebGUI front end will appear.
+
+---
+
+# 5. UniFi Controller CT
+Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+
+## 5.1. Installation
 Our Easy Script will create your PiHole CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
 
 ```
@@ -227,5 +251,5 @@ Follow our Easy Script installation prompts. We recommend you accept our default
 
 <hr>
 
-# 5. Patches and Fixes
+# 6. Patches and Fixes
 
