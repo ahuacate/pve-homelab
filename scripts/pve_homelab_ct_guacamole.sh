@@ -258,7 +258,7 @@ $(printf "  --  Guacamole URL|http://${CT_IP}:8080/guacamole
   --  Password|guacadmin
   --  MySQL Password|${USER_PWD}" | column -t -s "|" | indent2)
 
-Please change 'guacadmin' credentials or disable guacadmin after install. Store your MySQL and Guacamole credentials in a safe place.\n"
+Immediately change 'guacadmin' login credentials or disable guacadmin after install. Store your MySQL and Guacamole credentials in a safe place.\n"
 
 # Cleanup
 trap cleanup EXIT
