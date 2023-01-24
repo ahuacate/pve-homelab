@@ -1,35 +1,80 @@
 <h1>PVE Homelab</h1>
 
-This guide is about our Homelab PVE CTs.
+This guide is about Homelab PVE CTs.
 
 As with all our guides, we have an Easy Script to automate CT creation through to the installation of software.
 
 But the first step is to check your network and hardware prerequisite requirements before running our Easy Script. It's important you first read and follow our prerequisite guide.
 
-**Prerequisites**
+<h2>Prerequisites</h2>
 
-Network Prerequisites:
-- [ ] Layer 2/3 Network Switches
+**Network Prerequisites**
+- [x] Layer 2/3 Network Switches
+- [x] Network Gateway (*recommend xxx.xxx.1.5*)
+- [x] Network DHCP server (*recommend xxx.xxx.1.5*)
+- [x] Network DNS server (*recommend xxx.xxx.1.5*)
+- [x] Network Name Server (*recommend xxx.xxx.1.5*)
+- [x] PiHole DNS server (*recommend xxx.xxx.1.6*)
+    Configured with Conditional Forwarding addresses:
+    * Router DNS server (i.e xxx.xxx.1.5 - UniFi DNS)
+    * New LAN-vpngate-world DNS Server (i.e xxx.xxx.30.5 - pfSense VLAN30)
+    * New LAN-vpngate-local DNS Server (i.e xxx.xxx.40.5 - pfSense VLAN40)
+- [x] Local domain name is set on all network devices (*see note below*)
+- [x] PVE host hostnames are suffixed with a numeric (*i.e pve-01 or pve01 or pve1*)
+- [x] PVE host has internet access
 
-PVE Host Prerequisites:
-- [x] PVE Host is configured to our [build](https://github.com/ahuacate/pve-host-setup)
+**PVE Host Prerequisites**
+- [x] PVE Host is configured to our [build](https://github.com/ahuacate/pve-host)
 - [x] PVE Host Backend Storage mounted to your NAS
 	- nas-0X-backup
-	- nas-0X-transcode
-	- nas-0X-video
+	- nas-0X-transcode (required for CCTV applications/Home-Assistant)
+	- nas-0X-video (required for CCTV applications/Home-Assistant)
 	
-	You must have a running network File Server (NAS) with ALL of the above NFS and/or CIFS backend share points configured on your PVE host pve-01.
+	You must have a running network File Server (NAS) with ALL of the above NFS and/or CIFS backend share points configured on your PVE host 'pve-01'.
 
-Optional Prerequisites:
-- [ ] pfSense with working OpenVPN Gateways VPNGATE-LOCAL (VLAN30) and VPNGATE-WORLD (VLAN40).
+**Optional Prerequisites**
+- [ ] pfSense HA-Proxy for remote access (i.e Guacamole)
 
-<h4>Easy Scripts</h4>
-Easy Scripts are based on bash scripting. Simply `Cut & Paste` our Easy Script command into your terminal window, press `Enter` and follow the prompts and terminal instructions. But PLEASE first read our guide so you fully understand the input requirements.
+<h2>Local DNS Records</h2>
 
-Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the Easy Script prompt to accept our default settings ( i.e Proceed with our Easy Script defaults (recommended) [y/n]? enter 'n' ). You can then set your own PVE container variables such as IP address.
+We recommend <span style="color:red">you read</span> about network Local DNS and why a PiHole server is a necessity. Click <a href="https://github.com/ahuacate/common/tree/main/pve/src/local_dns_records.md" target="_blank">here</a> to learn more before proceeding any further.
+
+Your network Local Domain or Search domain must be also set. We recommend only top-level domain (spTLD) names for residential and small networks names because they cannot be resolved across the internet. Routers and DNS servers know, in theory, not to forward ARPA requests they do not understand onto the public internet. It is best to choose one of our listed names: local, home.arpa, localdomain or lan only. Do NOT use made-up names.
+
+<h2>Easy Scripts</h2>
+
+Easy Scripts automate the installation and/or configuration processes with preset configurations. Simply `Cut & Paste` our Easy Script command into your terminal window, press `Enter` and follow the prompts and terminal instructions.
+
+All Easy Scripts assumes your network is VLAN and DHCP IPv4 ready. If not, decline at the Easy Script prompt to accept our default settings (i.e Proceed with our Easy Script defaults (recommended) [y/n]? enter 'n'). You can then configure your all PVE container variables.
+
+But PLEASE first read our guide so you fully understand the input requirements.
+
+<h4><b>1) Easy Script installer</b></h4>
+
+Use this script to select and install all Homelab applications. Run in a PVE host SSH terminal.
+
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Homelab application suite.
+
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/main/pve_homelab_installer.sh)"
+```
+
+<h4><b>2) Easy Script toolbox</b></h4>
+
+A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
+
+Run in a PVE host SSH terminal.
+
+
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/main/pve_homelab_toolbox.sh)"
+```
+
+
 <hr>
 
 <h4>Table of Contents</h4>
+
 <!-- TOC -->
 
 - [1. About our Homelab Applications](#1-about-our-homelab-applications)
@@ -37,9 +82,9 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
         - [1.1.1. Unprivileged container mapping - homelab](#111-unprivileged-container-mapping---homelab)
         - [1.1.2. Allow a LXC to perform mapping on the Proxmox host - homelab](#112-allow-a-lxc-to-perform-mapping-on-the-proxmox-host---homelab)
         - [1.1.3. Create a newuser 'home' in a LXC](#113-create-a-newuser-home-in-a-lxc)
-- [2. PiHole CT](#2-pihole-ct)
-    - [2.1. Installation](#21-installation)
-    - [2.2. Setup PiHole](#22-setup-pihole)
+- [2. Pi-Hole CT](#2-pi-hole-ct)
+    - [2.1. Configure Pi-Hole](#21-configure-pi-hole)
+    - [2.2. Manual Conditional Forwarding entries](#22-manual-conditional-forwarding-entries)
 - [3. ddclient CT](#3-ddclient-ct)
     - [3.1. Installation](#31-installation)
     - [3.2. Maintenance](#32-maintenance)
@@ -48,9 +93,20 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
 - [4. Guacamole CT](#4-guacamole-ct)
     - [4.1. Installation](#41-installation)
     - [4.2. Setup Guacamole](#42-setup-guacamole)
-- [5. UniFi Controller CT](#5-unifi-controller-ct)
+        - [4.2.1. Configure Groups](#421-configure-groups)
+        - [4.2.2. Configure Users](#422-configure-users)
+        - [4.2.3. Add Connection - Guaca-RDP](#423-add-connection---guaca-rdp)
+    - [4.2. Guacamole Toolbox](#42-guacamole-toolbox)
+- [5. Guaca-RDP CT](#5-guaca-rdp-ct)
     - [5.1. Installation](#51-installation)
-- [6. Patches and Fixes](#6-patches-and-fixes)
+    - [5.2. Setup Guaca-RDP](#52-setup-guaca-rdp)
+        - [5.2.1. Firefox bookmarks](#521-firefox-bookmarks)
+        - [5.2.2. GPU accelerated Firefox](#522-gpu-accelerated-firefox)
+- [6. UniFi Controller CT](#6-unifi-controller-ct)
+    - [6.1. Installation](#61-installation)
+    - [Setup UniFi Controller](#setup-unifi-controller)
+    - [4.2. UniFi Controller Toolbox](#42-unifi-controller-toolbox)
+- [7. Patches and Fixes](#7-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -130,25 +186,43 @@ useradd -u 1606 -g homelab -m home
 ```
 The above change is done automatically in our Easy Script.
 
----
+<hr>
 
-# 2. PiHole CT
-PiHole is an internet tracker blocking application that acts as a DNS sinkhole. Its charter is to block advertisements, tracking domains, tracking cookies, and all those personal data mining collection companies.
+# 2. Pi-Hole CT
 
-## 2.1. Installation
-Our Easy Script will create your PiHole CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
+Pi-Hole is an internet tracker blocking application that acts as a DNS sinkhole. Its charter is to block advertisements, tracking domains, tracking cookies, and all those personal data mining collection companies. In our configuration, we also completely bypass 3rd party DNS servers like 8.8.8.8, 1.1.1.1 or your ISP DNS.
+
+## 2.1. Configure Pi-Hole
+Our installation fully configures your Pi-Hole DNS server.
+
+In your web browser URL type `http:/pi.hole/admin` or use the static IP address `http:/<ip-address>/admin`. The application's WebGUI front end will appear. The default password is 'ahuacate'.
+
+
+## 2.2. Manual Conditional Forwarding entries
+The User would've been prompted to configure additional Conditional Forwarding entries during the installation. If you choose to add more entries follow these instructions.
+
+Navigate using the Pi-Hole web interface to `Settings` > `DNS tab` and complete as follows (change to match your network).
+
+:white_check_mark: Use DNSSEC
+:white_check_mark: Use Conditional Forwarding
+
+|Local network in CIDR|IP address of your DHCP server (router)|Local domain name
+|----|----|----
+|192.168.0.0/24|192.168.1.5|local
+
+At the time of writing, Pi-Hole WebGUI only allows for one conditional forward entry. From an SSH session to your Pi-hole DNS server create a PiHole host custom file using command/path `nano /etc/dnsmasq.d/01-custom.conf`. In this file we add the following server entries (amend to your chosen IPv4 addresses):
 
 ```
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/master/pve_homelab_ct_pihole_installer.sh)"
+server=/local/192.168.30.5 # LAN-vpngate-world
+server=/local/192.168.40.5 # LAN-vpngate-local
+server=/168.192.in-addr.arpa/192.168.1.5 # UniFi UGS/UDM router
+server=/168.192.in-addr.arpa/192.168.30.5 # LAN-vpngate-world
+server=/168.192.in-addr.arpa/192.168.40.5 # LAN-vpngate-local
+
+strict-order
 ```
 
-Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
-
-## 2.2. Setup PiHole
-In your web browser URL type `http://192.168.1.254`. The application's WebGUI front end will appear. The installation default password is 'ahuacate'.
-Our PiHole installation presets all settings.
-
----
+<hr>
 
 # 3. ddclient CT
 ddclient is a Perl client used to update dynamic DNS entries for accounts on many dynamic DNS services.
@@ -183,7 +257,7 @@ dnsexit     - See https://dnsexit.com/ for details
 ```
 
 ## 3.1. Installation
-Our Easy Script will create your ddclient CT. Open a account at any of the above providers ( Freedns is free ).
+Open an account at any of the above providers ( Freedns is free ).
 
 Have your Dynamic DNS hosting service credentials ready. During the installation you are required to input your account credentials:
 
@@ -191,18 +265,12 @@ Have your Dynamic DNS hosting service credentials ready. During the installation
 * Password
 * Server URL ( i.e hello.crabdance.com for a freedns.afraid.org account )
 
-Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
-
-```
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/master/pve_homelab_ct_ddclient_installer.sh)"
-```
-
-Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Use our Easy Script installer.
 
 The native ddclient setup wizard will start in your terminal window. Select your Dynamic DNS service provider and input your credentials when prompted.
 
 ## 3.2. Maintenance
-To manual update or reconfigure ddclient run the following SSH commands on your PVE host ( i.e pve-01 ).
+To manually update or reconfigure ddclient run the following SSH commands on your PVE host ( i.e pve-01 ).
 
 ### 3.2.1. Force Dynamic DNS service
 ```
@@ -217,39 +285,275 @@ CTID=252
 pct exec ${CTID} -- bash -c 'sudo dpkg-reconfigure ddclient'
 ```
 
----
+<hr>
+
 # 4. Guacamole CT
 Apache Guacamole is a clientless remote desktop gateway. It supports standard protocols like VNC, RDP, and SSH. Once Guacamole is installed on a server, all you need to access your desktops is a web browser.
 
 ## 4.1. Installation
 This install uses the [MysticRyuujin](https://github.com/MysticRyuujin/guac-install) installation script. Thanks to [MysticRyuujin](https://github.com/MysticRyuujin/guac-install) for maintaining this script.
 
-Our Easy Script will create your Guacamole CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
+During the install process you will be prompted to use two-factor authorization. We recommend you configure two-factor authorization. Our preference is TOTP with a YubiKey. Your install options are:
 
-```
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/master/pve_homelab_ct_guacamole_installer.sh)"
-```
+*  **TOTP** - Time-based one-time password (Recommended)
+TOTPs are used for two-factor authentication (2FA) or multi-factor authentication (MFA). Providers are YubiKey, Google Authenticator, Microsoft Authenticator etc.
+*  **DUO** - Part of Cisco MFA family.
 
-Follow our Easy Script installation prompts.
+
+Use our Easy Script installer. Follow our Easy Script installation prompts.
 
 ## 4.2. Setup Guacamole
-In your web browser URL type `http://192.168.1.250:8080/guacamole`. The application's WebGUI front end will appear.
+To connect to this system, we have to create an administrative user account that allows us to authenticate and administer Guacamole.
 
----
+Much like any Linux OS Guacamole uses Groups and Users.
 
-# 5. UniFi Controller CT
-Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+In your web browser URL type `http://guacamole.local:8080/guacamole/#/`. The application's WebGUI front end will appear. The installer default credentials are: username `guacadmin` and password `guacadmin`.
 
-## 5.1. Installation
-Our Easy Script will create your PiHole CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
+### 4.2.1. Configure Groups
+Navigate using the Guacamole web interface to `settings` > `Groups tab` > `New Group` and complete as follows.
 
-```
-Coming soon. Sorry.
-```
+| Description | Value
+| :--- | :---
+| Group name | `Privatelab`
+| **Group Restrictions**
+| Disabled | `☐`
+| **Permissions**
+| Administer system | `☑`
+| Create new users | `☑`
+| Create new user groups | `☐`
+| Create new connections | `☐`
+| Create new connection groups | `☐`
+| Create new sharing profiles | `☐`
+| **Parent Groups**
+| **Member Groups**
+| **Member Users**
+| **Connections**
 
-Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+And click `Save`.
+
+### 4.2.2. Configure Users
+Guacamole's default root level user is "guacadmin". We recommend you delete this user BUT first create an alternative.
+
+Navigate using the Guacamole web interface to `settings` > `Users tab` > `New User` and complete as follows.
+
+| Description | Value
+| :--- | :---
+| MySQL `☑`
+| Username | input your own admin name (not guacadmin or admin or root)
+| Password | something complex as its open to the web
+| **Configure TOTP**
+| Clear TOTP secret
+| TOTP key confirmed
+| **Account Restrictions**
+| Login disabled | `☐`
+| Password expired | 
+|Allow access after
+| Do not allow access after
+|Enable account after
+| Disable account after
+| User time zone | best set as it makes reading logs easier
+| **Profile**
+| Full name
+| Email address
+| Organization
+| Role
+| **Permissions**
+| Administer system | `☑`
+| Create new users | `☑`
+| Create new user group | `☑`
+| Create new connections | `☑`
+| Create new connection groups | `☑`
+| Create new sharing profiles | `☑`
+| Change own password | `☑`
+| **Groups**
+|| `☑` Privatelab
+| **Connections**
+
+And click `Save`.
+
+Now immediately delete user `guacadmin`.
+
+### 4.2.3. Add Connection - Guaca-RDP
+Guaca-RDP is a headless PVE Ubuntu remote desktop gateway.
+
+Navigate using the Guacamole web interface to `settings` > `Connections tab` > `New Group` and complete as follows.
+
+| Description | Value
+| :--- | :---
+| Name | `Privatelab`
+| Location | `ROOT`
+| Type | `Organizational`
+| **Concurrency Limits** (Balancing Groups)
+| Maximum number of connections | `1`
+| Maximum number of connections per user | `1`
+| Enable session affinity | `☐`
+
+Navigate using the Guacamole web interface to `settings` > `Connections tab` > `New Connection` and complete as follows.
+
+| Description | Value
+| :--- | :---
+| Name | `Guacamole RDP Machine`
+| Location | `homelab`
+| Protocol | `RDP`
+| **Concurrency Limits**
+| Maximum number of connections | `1`
+| Maximum number of connections per user | `2`
+| **Load Balancing**
+| Connection weight
+| Use for failover only
+| **Guacamole Proxy Parameters**
+| Hostname
+| Port
+| Encryption
+| **Parameters**
+| **Network**
+| Hostname | `guacardp.local`
+| Port | `3389`
+| **Authentication**
+| Username | `admin`
+| Password | `ahuacate`
+| Domain | `local` (or your localdomain)
+| Security mode | `RDP encryption`
+| Disable authentication | `☐`
+| Ignore server certificate | `☑`
+| **Remote Desktop Gateway**
+| Hostname
+| Port
+| Username
+| Password
+| Domain
+| **Basic Settings**
+| Initial program
+| Client name
+| Keyboard layout
+| Time zone
+| Enable multi-touch | `☑`
+| Administrator console
+| **Display**
+| Width | `1920`
+| Height| `1080`
+| Resolution (DPI)
+| Color depth | `True colour (32-bit)`
+| Force lossless compression | `☐`
+| Resize method | `"Display update" virtual channel (RDP 8.1+)`
+| Read-only | `☐`
+| **Clipboard**
+| Line endings
+| Disable copying from remote desktop
+| Disable pasting from client
+| **Device Redirection**
+| Support audio in console
+| Disable audio
+| Enable audio input (microphone)
+| Enable printing
+| Redirected printer name
+| Enable drive
+| Drive name
+| Disable file download
+| Disable file upload
+| Drive path
+| Automatically create drive
+| Static channel names
+| **Performance**
+| Enable wallpaper
+| Enable theming
+| Enable font smoothing (ClearType) | `☑`
+| Enable full-window drag | `☑`
+| Enable desktop composition (Aero)
+| Enable menu animations
+| Disable bitmap caching
+| Disable off-screen caching
+| Disable glyph caching
+| **RemoteApp**
+| Program
+| Working directory
+| Parameters
+| **Preconnection PDU / Hyper-V**
+| RDP source ID
+| Preconnection BLOB (VM ID)
+| **Load Balancing**
+| Load balance info/cookie
+| **Screen Recording**
+| Recording path
+| Recording name
+| Exclude graphics/streams
+| Exclude mouse
+| Exclude touch events
+| Include key events
+| Automatically create recording path
+| **SFTP**
+| Enable SFTP
+| Hostname
+| Port
+| Public host key (Base64)
+| Username
+| Password
+| Private key
+| Passphrase
+| File browser root directory
+| Default upload directory
+| SFTP keepalive interval
+| Disable file download
+| Disable file upload
+| **Wake-on-LAN (WoL)**
+| Send WoL packet
+| MAC address of the remote host
+| Broadcast address for WoL packet
+| UDP port for WoL packet
+| Host boot wait time 
+
+And click `Save`.
+
+## 4.2. Guacamole Toolbox
+A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
 
 <hr>
 
-# 6. Patches and Fixes
+# 5. Guaca-RDP CT
+Guaca-RDP is a headless PVE Ubuntu remote desktop gateway. It supports Guacamole RDP and SSH connections. Use it to remotely connect to your PVE hosts and network clients using Guacamole.
+
+## 5.1. Installation
+Use our Easy Script installer. Follow our Easy Script installation prompts.
+
+## 5.2. Setup Guaca-RDP
+The default user credentials are: username `admin` and password `ahuacate`.
+
+### 5.2.1. Firefox bookmarks
+We have created a Firefox bookmark list of all our Ahuacate CT URLs.
+
+Navigate using the Firefox web interface `Settings` > `Bookmarks` > `Manage bookmarks` > `Import and Backup` > `Restore` > `Choose File` and browse to Desktop file `bookmarks-ahuacate.json`. Click `Open` to import.
+
+### 5.2.2. GPU accelerated Firefox
+Connect to Guaca-RDP using any remote connect package (i.e Windows Remote Desktop Connection).
+
+Guaca-RDP is preinstalled with Firefox. To enable VA-API GPU acceleration you need to perform some Firefox tuning.
+
+Navigate using the Firefox web interface and input the address `about:config` and click `Accept the Risk and Continue`. Search for the following settings and configure them as shown in the table below.
+
+| Preference Name | Flag Value
+| :--- | :---
+| media.ffmpeg.vaapi.enabled | true
+| gfx.webrender.enabled | true
+| gfx.webrender.all | true
+| layers.acceleration.force-enabled | true
+
+<hr>
+
+# 6. UniFi Controller CT
+Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+
+## 6.1. Installation
+Use our Easy Script installer. Follow our Easy Script installation prompts.
+
+## Setup UniFi Controller
+UniFi Controller must be assigned a static IP address. Make a DHCP IP reservation at your DHCP server or router (i.e 192.168.1.4) and restart your UniFi Controller CT.
+
+In your web browser URL type `http://unifi-controller.local:8443`. The application's WebGUI front end will appear.
+
+## 4.2. UniFi Controller Toolbox
+A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
+
+<hr>
+
+# 7. Patches and Fixes
 

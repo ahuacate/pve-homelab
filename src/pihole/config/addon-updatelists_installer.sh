@@ -17,7 +17,7 @@ GIT_USER='ahuacate'
 # Git repository
 GIT_REPO='pve-homelab'
 # Git branch
-GIT_BRANCH='master'
+GIT_BRANCH='main'
 # Git common
 GIT_COMMON='0'
 
@@ -39,7 +39,7 @@ pct exec $CTID -- sed -e '/pihole updateGravity/ s/^#*/#/' -i /etc/cron.d/pihole
 
 
 #---- List Source
-msg_box "You can choose to use the default lists or the Ahuacate lists. We recommend the default list because its long term you should manage your own whitelists.
+msg_box "You can choose to use the default lists or the Ahuacate lists. We recommend the default list because in the long term you will likely create your own whitelists.
 
 Default lists are:
   AD LISTS
@@ -73,7 +73,7 @@ if [ ${RESULTS} == TYPE01 ]; then
 elif [ ${RESULTS} == TYPE02 ]; then
   # Default configuration file is /etc/pihole-updatelists.conf
   # SRC Url
-  MY_LIST_SRC="https://raw.githubusercontent.com/${GIT_USER}/${GIT_REPO}/master/scripts/source/pve_homelab_ct_pihole_settings"
+  MY_LIST_SRC="https://raw.githubusercontent.com/${GIT_USER}/${GIT_REPO}/main/src/pihole/source/config"
   # my_adlists
   pct exec $CTID -- sed -i "s|^ADLISTS_URL=.*|ADLISTS_URL=\"https://v.firebog.net/hosts/lists.php?type=tick ${MY_LIST_SRC}/my_adlists.txt\"|" /etc/pihole-updatelists.conf
   # my_whitelist_url

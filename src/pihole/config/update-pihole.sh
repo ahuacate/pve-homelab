@@ -27,7 +27,7 @@ GIT_USER='ahuacate'
 # Git repository
 GIT_REPO='pve-homelab'
 # Git branch
-GIT_BRANCH='master'
+GIT_BRANCH='main'
 # Git common
 GIT_COMMON='0'
 
