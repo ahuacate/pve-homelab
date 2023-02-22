@@ -10,8 +10,8 @@
 
 # Update these variables as required for your specific instance
 app="${REPO_PKG_NAME,,}"       # App name
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
+app_uid="$APP_USERNAME"        # App UID
+app_guid="$APP_GRPNAME"        # App GUID
 
 #---- Other Variables --------------------------------------------------------------
 
@@ -33,10 +33,10 @@ sudo locale-gen en_US.UTF-8
 apt-get install ca-certificates wget -y
 
 #---- Configure firewall
-sudo ufw allow ${SSH_PORT}
-sudo ufw allow from ${LOCAL_NET} to any port ${SSH_PORT}
+sudo ufw allow $SSH_PORT
+sudo ufw allow from $LOCAL_NET to any port $SSH_PORT
 sudo ufw allow 8443 # UniFi Controller management port
-sudo ufw allow from ${LOCAL_NET} to any port 8443
+sudo ufw allow from $LOCAL_NET to any port 8443
 # UniFi STun & inform port
 sudo ufw allow 3478/udp
 sudo ufw allow 8080

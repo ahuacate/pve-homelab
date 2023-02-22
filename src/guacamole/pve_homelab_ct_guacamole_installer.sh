@@ -163,7 +163,8 @@ APP_GRPNAME='homelab'
 # Required PVESM Storage Mounts for CT ( new version )
 unset pvesm_required_LIST
 pvesm_required_LIST=()
-while IFS= read -r line; do
+while IFS= read -r line
+do
   [[ "$line" =~ ^\#.*$ ]] && continue
   pvesm_required_LIST+=( "$line" )
 done << EOF
@@ -173,21 +174,22 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 # Homelab CT unprivileged mapping
-if [ $CT_UNPRIVILEGED = 1 ]; then
-  source ${COMMON_PVE_SRC_DIR}/pvesource_ct_homelab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = 1 ]
+then
+  source $COMMON_PVE_SRC_DIR/pvesource_ct_homelab_ctidmapping.sh
 fi
 
 #---- Guacamole --------------------------------------------------------------------
@@ -226,10 +228,10 @@ OPTIONS_VALUES_INPUT=( "TYPE01" "TYPE02" )
 OPTIONS_LABELS_INPUT=( "Random Password - random machine generated password ( Recommended )" "Other - create your own password" )
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
-if [ ${RESULTS} == TYPE01 ]; then
+if [ "$RESULTS" = TYPE01 ]; then
   # Machine generated password
   make_userpwd
-elif [ ${RESULTS} == TYPE02 ]; then
+elif [ "$RESULTS" = TYPE02 ]; then
   # Input a Password
   input_userpwd_val
 fi
@@ -246,24 +248,25 @@ OPTIONS_VALUES_INPUT=( "TYPE01" "TYPE02" "TYPE03" )
 OPTIONS_LABELS_INPUT=( "Duo - installs the Duo extension" "TOTP - installs the TOTP extension (YubiKey or Google MFA)" "None - no two-factor authentication" )
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
-if [ ${RESULTS} == TYPE01 ]; then
+if [ "$RESULTS" = TYPE01 ]; then
   # Two-factor type
   MFA='duo'
-elif [ ${RESULTS} == TYPE02 ]; then
+elif [ "$RESULTS" = TYPE02 ]; then
   # Two-factor type
   MFA='totp'
-elif [ ${RESULTS} == TYPE03 ]; then
+elif [ "$RESULTS" = TYPE03 ]; then
   # Two-factor type
   MFA='nomfa'
 fi
 
 # Run Installer
 msg "Running MysticRyuujin/guac-install script (be patient, might take a while)..."
-pct push $CTID ${SRC_DIR}/guacamole/guacamole_sw.sh /tmp/guacamole_sw.sh -perms 755
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=${REPO_PKG_NAME} APP_USERNAME=${APP_USERNAME} APP_GRPNAME=${APP_GRPNAME} MFA=${MFA} USER_PWD=${USER_PWD} && /tmp/guacamole_sw.sh"
+pct push $CTID $SRC_DIR/guacamole/guacamole_sw.sh /tmp/guacamole_sw.sh -perms 755
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME MFA=$MFA USER_PWD=$USER_PWD && /tmp/guacamole_sw.sh"
 
 # Check SMTP server status for emailing login credentials
-if [ ${SMTP_STATUS} = '1' ]; then
+if [ "$SMTP_STATUS" = 1 ]
+then
   EMAIL_RECIPIENT=$(pveum user list | awk -F " │ " '$1 ~ /root@pam/' | awk -F " │ " '{ print $3 }')
   msg_box "#### PLEASE READ CAREFULLY - EMAIL GUACAMOLE ADMIN CREDENTIALS ####\n
   Your Guacamole login credentials can be emailed to this PVE hosts system administrator : ${EMAIL_RECIPIENT}
@@ -277,7 +280,8 @@ if [ ${SMTP_STATUS} = '1' ]; then
     --  Password|guacadmin
     --  MySQL Password|${USER_PWD}" | column -t -s "|" | indent2)"
   echo
-  while true; do
+  while true
+  do
     read -p "Email ${HOSTNAME^} login credentials to your systems administrator [y/n]? " -n 1 -r YN
     echo
     case $YN in
@@ -317,18 +321,22 @@ pct_start_waitloop
 section "Completion Status."
 
 # Check for ZFS install error
-if [[ $(pvesm status | grep '^local-zfs') ]]; then
+if [[ $(pvesm status | grep '^local-zfs') ]]
+then
   warn "If you are seeing this warning its because your PVE is on ZFS. At the time of writing mysql-server fails when the LXC is on ZFS. Guacamole installs on EXT4 without issues."
 fi
 
 #---- Set display text
 unset display_msg1
 # Web access URL
-if [ -n "${IP}" ] && [ ! ${IP} == 'dhcp' ]; then
+if [ -n "${IP}" ] && [ ! "$IP" = 'dhcp' ]
+then
   display_msg1+=( "http://${IP}:8080/guacamole" )
-elif [ -n "${IP6}" ] && [ ! ${IP6} == 'dhcp' ]; then
+elif [ -n "${IP6}" ] && [ ! "$IP6" = 'dhcp' ]
+then
   display_msg1+=( "http://${IP6}:8080/guacamole" )
-elif [ ${IP} == 'dhcp' ] || [ ${IP6} == 'dhcp' ]; then
+elif [ "$IP" = 'dhcp' ] || [ "$IP6" = 'dhcp' ]
+then
   display_msg1+=( "http://$(pct exec $CTID -- bash -c "hostname -I | sed 's/ //g'"):8080/guacamole (not static)" )
   # display_msg1+=( "We recommend the Guacamole server be set with a STATIC IP ADDRESS to function properly. Set a static IP using DHCP reservation at your router or DHCP server." )
 fi

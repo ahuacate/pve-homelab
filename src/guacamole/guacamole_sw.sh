@@ -9,11 +9,11 @@
 #---- Static Variables -------------------------------------------------------------
 
 # Update these variables as required for your specific instance
-app="${REPO_PKG_NAME,,}"       # App name
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
-user_pwd=${USER_PWD}           # MySQL password
-mfa=${MFA}                     # Two-factor authentication (TOTP, Duo or none)
+app="${REPO_PKG_NAME,,}"  # App name
+app_uid="$APP_USERNAME"   # App UID
+app_guid="$APP_GRPNAME"   # App GUID
+user_pwd="$USER_PWD"      # MySQL password
+mfa="$MFA"                # Two-factor authentication (TOTP, Duo or none)
 
 #---- Other Variables --------------------------------------------------------------
 
@@ -35,7 +35,8 @@ LOCAL_NET=$(hostname -I | awk -F'.' -v OFS="." '{ print $1,$2,"0.0/24" }')
 
 # Download upgrade script
 wget -q --show-progress -O guac-install.sh https://raw.githubusercontent.com/MysticRyuujin/guac-install/master/guac-install.sh
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]
+then
   echo -e "${RED}WARNING:${NC}\nFailed to download: ${WHITE}guac-install.sh${NC}"
   echo
   return
@@ -47,8 +48,8 @@ chmod +x guac-install.sh
 ./guac-install.sh --mysqlpwd ${user_pwd} --guacpwd ${user_pwd} --installmysql --${mfa}
 
 #---- Configure firewall
-sudo ufw allow ${GUAC_PORT}/tcp
-sudo ufw allow ${SSH_PORT}
+sudo ufw allow $GUAC_PORT/tcp
+sudo ufw allow $SSH_PORT
 # Enable ufw
 sudo ufw enable
 sudo ufw reload

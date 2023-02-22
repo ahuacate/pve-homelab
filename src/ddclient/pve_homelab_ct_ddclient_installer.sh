@@ -165,7 +165,8 @@ APP_PASSWORD='ahuacate'
 # Required PVESM Storage Mounts for CT ( new version )
 unset pvesm_required_LIST
 pvesm_required_LIST=()
-while IFS= read -r line; do
+while IFS= read -r line
+do
   [[ "$line" =~ ^\#.*$ ]] && continue
   pvesm_required_LIST+=( "$line" )
 done << EOF
@@ -175,21 +176,22 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 # Homelab CT unprivileged mapping
-if [ $CT_UNPRIVILEGED = 1 ]; then
-  source ${COMMON_PVE_SRC_DIR}/pvesource_ct_homelab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = 1 ]
+then
+  source $COMMON_PVE_SRC_DIR/pvesource_ct_homelab_ctidmapping.sh
 fi
 
 #---- ddclient ---------------------------------------------------------------------

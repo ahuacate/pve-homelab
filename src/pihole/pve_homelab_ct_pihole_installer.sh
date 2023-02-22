@@ -170,17 +170,17 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 #---- Pi-Hole -----------------------------------------------------------------------
 
@@ -188,17 +188,17 @@ section "Install Pi-Hole"
 
 #---- Prerequisites
 # Create Hash Password
-PIHOLE_PASSWORD="$(echo -n ${APP_PASSWORD} | sha256sum | awk '{printf "%s",$1 }' | sha256sum | awk '{printf "%s",$1 }')"
+PIHOLE_PASSWORD="$(echo -n "$APP_PASSWORD" | sha256sum | awk '{printf "%s",$1 }' | sha256sum | awk '{printf "%s",$1 }')"
 
 # DHCP server
 interface=$(ip r | grep default | awk '/default/ {print $5}')
 DHCP_SERVER_IP=$(nmap --script broadcast-dhcp-discover -e $interface 2> /dev/null |  grep 'Router' | sed 's/^.*: //' | sed -r 's/\s+//g')
 
 # Local network CIDR
-CIDR_NOTA=$(echo ${DHCP_SERVER_IP} | awk -F'.' -v octet="0" '{OFS=FS}{ print $1, $2, octet, octet"/16" }')
+CIDR_NOTA=$(echo "$DHCP_SERVER_IP" | awk -F'.' -v octet="0" '{OFS=FS}{ print $1, $2, octet, octet"/16" }')
 
 # Create installer preset /etc/pihole/setupVars.conf
-cat << EOF > ${DIR}/setupVars.conf 
+cat << EOF > $DIR/setupVars.conf 
 WEBPASSWORD=${PIHOLE_PASSWORD}
 PIHOLE_INTERFACE=eth0
 IPV4_ADDRESS=${IP}/24
@@ -227,10 +227,10 @@ EOF
 
 # Push Pi-Hole setupVars.conf to CT
 pct exec $CTID -- mkdir -p /etc/pihole
-pct push $CTID ${DIR}/setupVars.conf /etc/pihole/setupVars.conf
+pct push $CTID $DIR/setupVars.conf /etc/pihole/setupVars.conf
 
 # Create SW installation package script
-cat << EOF > ${DIR}/installpkg.sh 
+cat << EOF > $DIR/installpkg.sh 
 #!/usr/bin/env bash
 
 # Install Pi-Hole
@@ -252,21 +252,22 @@ EOF
 
 # Push unbound Pi-Hole config file to CT
 pct exec $CTID -- mkdir -p /etc/unbound/unbound.conf.d
-pct push $CTID ${SRC_DIR}/pihole/config/unbound_pihole.conf /etc/unbound/unbound.conf.d/pi-hole.conf
+pct push $CTID $SRC_DIR/pihole/config/unbound_pihole.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 
 
 #---- Installing Pi-Hole
 msg "Installing Pi-Hole..."
 
 # Run the SW installation package script
-pct push $CTID ${DIR}/installpkg.sh /tmp/installpkg.sh -perms 755
+pct push $CTID $DIR/installpkg.sh /tmp/installpkg.sh -perms 755
 pct exec $CTID -- bash -c "/tmp/installpkg.sh"
 echo
 
 # Identify PVE hosts
-source ${COMMON_PVE_SRC_DIR}/pvesource_identify_pvehosts.sh
+source $COMMON_PVE_SRC_DIR/pvesource_identify_pvehosts.sh
 msg "Adding static PVE machine hostnames to Pi-Hole DNS records..."
-while IFS=',' read -r pve_hostname pve_ip other; do
+while IFS=',' read -r pve_hostname pve_ip other
+do
   # Add to /etc/pihole/custom.list
   pct exec $CTID -- bash -c "echo \"${pve_ip} ${pve_hostname}.$(hostname -d)\" >> /etc/pihole/custom.list"
 done < <( printf '%s\n' "${pve_node_LIST[@]}" )
@@ -281,9 +282,11 @@ msg_box "#### PLEASE READ CAREFULLY - Other DHCP Servers ####\n\nPiHole requires
 msg "Add additional DHCP server IP addresses..."
 j=2
 dhcp_server_ip_LIST=()
-while true; do
+while true
+do
   # Display configured additional DHCP servers
-  if [ ${#dhcp_server_ip_LIST[@]} != 0 ]; then
+  if [ ! ${#dhcp_server_ip_LIST[@]} = 0 ]
+  then
     msg_box "Conditional Forwarding - Additional DHCP Servers\n\n$(printf '%s\n' "${dhcp_server_ip_LIST[@]}" | column -s ":" -t -N "Network CIDR notation,DHCP Server IP,Description" | indent2)"
   fi
   unset OPTIONS_VALUES_INPUT
@@ -294,26 +297,29 @@ while true; do
   makeselect_input2
   singleselect SELECTED "$OPTIONS_STRING"
 
-  if [ ${RESULTS} == 'TYPE01' ]; then
+  if [ "$RESULTS" = 'TYPE01' ]
+  then
     # Add a DHCP server IP address
     read -p "Enter a network DHCP server IPv4 address: " -e DHCP_SERVER_IP_EXTRA
     FAIL_MSG="The DHCP address 'appears' to be not valid. A valid DHCP IP address is when all of the following constraints are satisfied:\n
     --  it meets the IPv4 or IPv6 standard.\n
     Try again..."
-    PASS_MSG="DHCP IP server is set: ${YELLOW}${DHCP_SERVER_IP_EXTRA}${NC}"
-    result=$(valid_ip ${DHCP_SERVER_IP_EXTRA} > /dev/null 2>&1)
-    if [ $? -ne 0 ]; then
+    PASS_MSG="DHCP IP server is set: ${YELLOW}$DHCP_SERVER_IP_EXTRA${NC}"
+    result=$(valid_ip "$DHCP_SERVER_IP_EXTRA" > /dev/null 2>&1)
+    if [ $? -ne 0 ]
+    then
       warn "$FAIL_MSG"
       echo
     else
-      while true; do
-        read -p "Accept DHCP IP '${DHCP_SERVER_IP_EXTRA}' [y/n]?: " -n 1 -r YN
+      while true
+      do
+        read -p "Accept DHCP IP '$DHCP_SERVER_IP_EXTRA' [y/n]?: " -n 1 -r YN
         echo
         case $YN in
           [Yy]*)
             info "$PASS_MSG"
             # Local network CIDR
-            CIDR_NOTA_EXTRA=$(echo ${DHCP_SERVER_IP_EXTRA} | awk -F'.' -v octet="0" '{OFS=FS}{ print $1, $2, octet, octet"/16" }')
+            CIDR_NOTA_EXTRA=$(echo "$DHCP_SERVER_IP_EXTRA" | awk -F'.' -v octet="0" '{OFS=FS}{ print $1, $2, octet, octet"/16" }')
             dhcp_server_ip_LIST+=( "${CIDR_NOTA_EXTRA}:${DHCP_SERVER_IP_EXTRA}:DHCP Server $j" )
             (( j=j+1 ))
             echo
@@ -332,21 +338,24 @@ while true; do
       done
       echo
     fi
-  elif [ ${RESULTS} == 'TYPE02' ]; then
+  elif [ "$RESULTS" = 'TYPE02' ]
+  then
     # Finished. Nothing more to add
     break
   fi
 done
 
 # Creating PiHole custom entry
-if [ ${#dhcp_server_ip_LIST[@]} != 0 ]; then
+if [ ! ${#dhcp_server_ip_LIST[@]} = 0 ]
+then
   msg "Creating custom entry to Pi-Hole Conditional Forwarding records..."
   # Add router to /etc/dnsmasq.d/01-custom.conf
-  ARPA_OCTET=$(echo ${DHCP_SERVER_IP} | awk -F'.' 'BEGIN {OFS = FS} { print $1,$2 }')
+  ARPA_OCTET=$(echo "$DHCP_SERVER_IP" | awk -F'.' 'BEGIN {OFS = FS} { print $1,$2 }')
   pct exec $CTID -- bash -c "echo \"server=/${ARPA_OCTET}.in-addr.arpa/${DHCP_SERVER_IP} # UniFi UGS/UDM router\" >> /etc/dnsmasq.d/01-custom.conf"
   # Add additional DHCP server IP addresses to /etc/dnsmasq.d/01-custom.conf
-  while IFS=',' read -r cidr dhcp_ip desc; do
-    ARPA_OCTET=$(echo ${dhcp_ip} | awk -F'.' 'BEGIN {OFS = FS} { print $1,$2 }')
+  while IFS=',' read -r cidr dhcp_ip desc
+  do
+    ARPA_OCTET=$(echo "$dhcp_ip" | awk -F'.' 'BEGIN {OFS = FS} { print $1,$2 }')
     pct exec $CTID -- bash -c "echo \"server=/local/${dhcp_ip} # ${desc}\" >> /etc/dnsmasq.d/01-custom.conf"
     pct exec $CTID -- bash -c "echo \"server=/${ARPA_OCTET}.in-addr.arpa/${dhcp_ip} # ${desc}\" >> /etc/dnsmasq.d/01-custom.conf"
   done < <( printf '%s\n' "${dhcp_server_ip_LIST[@]}" )
@@ -365,13 +374,15 @@ OPTIONS_LABELS_INPUT=( "Install Jacklul Update adLists - Recommended" "None. Do 
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]
+then
   # Install Pi-Hole List Updater
   msg "Installing Jacklul Update Lists add-on..."
-  source ${SRC_DIR}/pihole/config/addon-updatelists_installer.sh
+  source $SRC_DIR/pihole/config/addon-updatelists_installer.sh
   info "Add-on status: ${YELLOW}installed${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE02' ]; then
+elif [ "$RESULTS" = 'TYPE02' ]
+then
   # Skip the step
   msg "Okay. You can always install at a later time. Moving on..."
   echo
@@ -382,7 +393,7 @@ fi
 section "Pi-Hole & Adlist Updater"
 
 msg "Installing Pi-Hole updater..."
-source ${SRC_DIR}/pihole/config/update-pihole_installer.sh
+source $SRC_DIR/pihole/config/update-pihole_installer.sh
 info "Pi-Hole updater status: ${YELLOW}installed${NC}"
 echo
 
@@ -393,13 +404,16 @@ section "Completion Status"
 unset display_msg1
 unset display_msg2
 # Web access URL
-if [ -n "${IP}" ] && [ ! ${IP} == 'dhcp' ]; then
-  display_msg1+=( "http://${IP}/admin" )
-  display_msg2+=( "${IP}" )
-elif [ -n "${IP6}" ] && [ ! ${IP6} == 'dhcp' ]; then
-  display_msg1+=( "http://${IP6}/admin" )
-  display_msg2+=( "${IP6}" )
-elif [ ${IP} == 'dhcp' ] || [ ${IP6} == 'dhcp' ]; then
+if [ -n "${IP}" ] && [ ! "$IP" = 'dhcp' ]
+then
+  display_msg1+=( "http://$IP/admin" )
+  display_msg2+=( "$IP" )
+elif [ -n "${IP6}" ] && [ ! "$IP6" = 'dhcp' ]
+then
+  display_msg1+=( "http://$IP6/admin" )
+  display_msg2+=( "$IP6" )
+elif [ "$IP" = 'dhcp' ] || [ "$IP6" = 'dhcp' ]
+then
   display_msg1+=( "http://$(pct exec $CTID -- bash -c "hostname -I | sed 's/ //g'")/admin (not static)" )
   display_msg1+=( "Pi-Hole requires a STATIC IP ADDRESS to function properly. Configure a static IP using DHCP reservation at your DHCP server. Our default Pi-Hole DNS IP is 192.168.1.6" )
   display_msg2+=( "Use the static IP DHCP reservation address (i.e 192.168.1.6)." )

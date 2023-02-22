@@ -21,19 +21,19 @@ OPTIONS_LABELS_INPUT=( "Upgrade Guacamole application" \
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]; then
   #---- Upgrade Guacamole tools
-  pct push $CTID ${SRC_DIR}/${APP_BUILD}/guacamole_upgrade_sw.sh /tmp/guacamole_upgrade_sw.sh
+  pct push $CTID $SRC_DIR/$APP_BUILD/guacamole_upgrade_sw.sh /tmp/guacamole_upgrade_sw.sh
   pct exec $CTID -- bash -c "/tmp/guacamole_upgrade_sw.sh"
-elif [ ${RESULTS} == 'TYPE02' ]; then
+elif [ "$RESULTS" = 'TYPE02' ]; then
   #---- Create Guacamole TOTP
-  pct push $CTID ${SRC_DIR}/${APP_BUILD}/guacamole_totp_sw.sh /tmp/guacamole_totp_sw.sh
+  pct push $CTID $SRC_DIR/$APP_BUILD/guacamole_totp_sw.sh /tmp/guacamole_totp_sw.sh
   pct exec $CTID -- bash -c "/tmp/guacamole_totp_sw.sh"
-elif [ ${RESULTS} == 'TYPE03' ]; then
+elif [ "$RESULTS" = 'TYPE03' ]; then
   #---- Create Guacamole Duo
-  pct push $CTID ${SRC_DIR}/${APP_BUILD}/guacamole_duo_sw.sh /tmp/guacamole_duo_sw.sh
+  pct push $CTID $SRC_DIR/$APP_BUILD/guacamole_duo_sw.sh /tmp/guacamole_duo_sw.sh
   pct exec $CTID -- bash -c "/tmp/guacamole_duo_sw.sh"
-elif [ ${RESULTS} == 'TYPE00' ]; then
+elif [ "$RESULTS" = 'TYPE00' ]; then
   # Exit installation
   msg "You have chosen not to proceed. Aborting. Bye..."
   echo
@@ -49,5 +49,5 @@ echo
 
 #---- Cleanup
 # Clean up CT tmp files
-pct exec $CTID -- bash -c "rm -R /tmp/${GIT_REPO} &> /dev/null; rm /tmp/${GIT_REPO}.tar.gz &> /dev/null"
+pct exec $CTID -- bash -c "rm -R /tmp/$GIT_REPO &> /dev/null; rm /tmp/${GIT_REPO}.tar.gz &> /dev/null"
 #-----------------------------------------------------------------------------------

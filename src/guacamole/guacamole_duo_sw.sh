@@ -38,8 +38,10 @@ SERVER="http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/${GU
 #---- Prerequisites
 
 # Check for Duo extensions and upgrade if found
-for file in /etc/guacamole/extensions/guacamole-auth-duo*.jar; do
-  if [[ -f $file ]]; then
+for file in /etc/guacamole/extensions/guacamole-auth-duo*.jar
+do
+  if [[ -f "$file" ]]
+  then
     echo -e "${RED}WARNING:${NC}\nDuo extension is already installed. Skipping this installation..."
     echo
     return
@@ -50,14 +52,15 @@ done
 
 # Download Guacamole extension
 wget -q --show-progress -O guacamole-auth-duo-${GUAC_VERSION}.tar.gz ${SERVER}/binary/guacamole-auth-duo-${GUAC_VERSION}.tar.gz
-if [ $? -ne 0 ]; then
-    echo -e "${RED}WARNING:${NC}\nFailed to download: ${WHITE}guacamole-auth-duo-${GUAC_VERSION}.tar.gz${NC}"
-    echo
-    return
+if [ $? -ne 0 ]
+then
+  echo -e "${RED}WARNING:${NC}\nFailed to download: ${WHITE}guacamole-auth-duo-${GUAC_VERSION}.tar.gz${NC}"
+  echo
+  return
 fi
 
 # Stop tomcat and guacamole
-service ${TOMCAT} stop
+service $TOMCAT stop
 service guacd stop
 
 # Install
@@ -70,7 +73,6 @@ rm -rf "guacamole-auth-duo-${GUAC_VERSION}"
 rm -f "guacamole-auth-duo-${GUAC_VERSION}.tar.gz"
 
 # Restart tomcat
-service ${TOMCAT} restart
+service $TOMCAT restart
 service guacd restart
-
 #-----------------------------------------------------------------------------------

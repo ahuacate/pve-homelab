@@ -29,7 +29,8 @@ apt-get upgrade -y
 
 # Download upgrade script
 wget  -q --show-progress -O guac-upgrade.sh https://raw.githubusercontent.com/MysticRyuujin/guac-install/master/guac-upgrade.sh
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]
+then
   echo -e "${RED}WARNING:${NC}\nFailed to download: ${WHITE}guac-upgrade.sh${NC}"
   echo
   return
@@ -42,5 +43,4 @@ chmod +x guac-upgrade.sh
 
 # Clean up
 rm -f "guac-upgrade.sh"
-
 #-----------------------------------------------------------------------------------

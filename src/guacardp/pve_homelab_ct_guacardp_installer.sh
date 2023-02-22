@@ -167,7 +167,8 @@ REPO_PKG_NAME='guacardp'
 # Required PVESM Storage Mounts for CT ( new version )
 unset pvesm_required_LIST
 pvesm_required_LIST=()
-while IFS= read -r line; do
+while IFS= read -r lin
+ do
   [[ "$line" =~ ^\#.*$ ]] && continue
   pvesm_required_LIST+=( "$line" )
 done << EOF
@@ -177,25 +178,26 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 # Homelab CT unprivileged mapping
-if [ $CT_UNPRIVILEGED = 1 ]; then
-  source ${COMMON_PVE_SRC_DIR}/pvesource_ct_homelab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = 1 ]
+then
+  source $COMMON_PVE_SRC_DIR/pvesource_ct_homelab_ctidmapping.sh
 fi
 
 # VA-API Install & Setup for CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_medialab_vaapipassthru.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_vaapipassthru.sh
 
 #---- Guacamole --------------------------------------------------------------------
 
@@ -210,11 +212,11 @@ pct_stop_waitloop
 pct_start_waitloop
 
 # Guacamole SW
-pct push $CTID ${SRC_DIR}/guacardp/guacardp_sw.sh /tmp/guacardp_sw.sh -perms 755
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=${REPO_PKG_NAME} APP_USERNAME=${APP_USERNAME} APP_GRPNAME=${APP_GRPNAME} && /tmp/guacardp_sw.sh"
+pct push $CTID $SRC_DIR/guacardp/guacardp_sw.sh /tmp/guacardp_sw.sh -perms 755
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/guacardp_sw.sh"
 
 # Push Firefox bookmark preset file to CT
-pct push $CTID ${SRC_DIR}/guacardp/config/bookmarks-ahuacate.json /home/admin/Desktop/bookmarks-ahuacate.json
+pct push $CTID $SRC_DIR/guacardp/config/bookmarks-ahuacate.json /home/admin/Desktop/bookmarks-ahuacate.json
 
 # Reboot the CT
 pct_stop_waitloop
@@ -226,11 +228,14 @@ section "Completion Status."
 #---- Set display text
 unset display_msg1
 # Web access URL
-if [ -n "${IP}" ] && [ ! ${IP} == 'dhcp' ]; then
+if [ -n "${IP}" ] && [ ! "$IP" = 'dhcp' ]
+then
   display_msg1+=( "${IP}" )
-elif [ -n "${IP6}" ] && [ ! ${IP6} == 'dhcp' ]; then
+elif [ -n "${IP6}" ] && [ ! "$IP6" = 'dhcp' ]
+then
   display_msg1+=( "${IP6}" )
-elif [ ${IP} == 'dhcp' ] || [ ${IP6} == 'dhcp' ]; then
+elif [ ${IP} == 'dhcp' ] || [ "$IP6" = 'dhcp' ]
+then
   display_msg1+=( "$(pct exec $CTID -- bash -c "hostname -I | sed 's/ //g'") (not static)" )
 fi
 display_msg1+=( "$(pct exec $CTID -- bash -c "hostname | sed 's/ //g'").$(pct exec $CTID -- bash -c "hostname -d | sed 's/ //g'") (Recommended to use FQDN)" )

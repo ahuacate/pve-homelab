@@ -16,6 +16,9 @@
 #---- Source -----------------------------------------------------------------------
 #---- Dependencies -----------------------------------------------------------------
 
+# Check PVE host subid mapping
+check_host_subid
+
 # Check SMTP Status
 check_smtp_status
 
@@ -169,7 +172,8 @@ REPO_PKG_NAME='unifi'
 # Required PVESM Storage Mounts for CT ( new version )
 unset pvesm_required_LIST
 pvesm_required_LIST=()
-while IFS= read -r line; do
+while IFS= read -r line
+do
   [[ "$line" =~ ^\#.*$ ]] && continue
   pvesm_required_LIST+=( "$line" )
 done << EOF
@@ -180,34 +184,35 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 # Check & create required PVE CT subfolders (all)
-source ${COMMON_DIR}/nas/src/nas_subfolder_installer_precheck.sh
+source $COMMON_DIR/nas/src/nas_subfolder_installer_precheck.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Pre-Configuring PVE CT
 section "Pre-Configure ${HOSTNAME^} ${VM_TYPE^^}"
 
 # Homelab CT unprivileged mapping
-if [ ${CT_UNPRIVILEGED} == '1' ]; then
-  source ${COMMON_PVE_SRC_DIR}/pvesource_ct_homelab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = 1 ]
+then
+  source $COMMON_PVE_SRC_DIR/pvesource_ct_homelab_ctidmapping.sh
 fi
 
 # Create CT Bind Mounts
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createbindmounts.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createbindmounts.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 #---- Create Homelab Group and User
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntu_addhomelabuser.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addhomelabuser.sh
 
 
 #---- UniFi Controller -------------------------------------------------------------
@@ -219,8 +224,8 @@ section "Install UniFi Controller software"
 pct_start_waitloop
 
 # UniFi SW
-pct push $CTID ${SRC_DIR}/unifi-controller/unifi-controller_sw.sh /tmp/unifi-controller_sw.sh -perms 755
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=${REPO_PKG_NAME} APP_USERNAME=${APP_USERNAME} APP_GRPNAME=${APP_GRPNAME} && /tmp/unifi-controller_sw.sh"
+pct push $CTID $SRC_DIR/unifi-controller/unifi-controller_sw.sh /tmp/unifi-controller_sw.sh -perms 755
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/unifi-controller_sw.sh"
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status."
@@ -229,11 +234,14 @@ section "Completion Status."
 unset display_msg1
 # Web access URL
 display_msg1=( "https://$(pct exec $CTID -- bash -c "hostname | sed 's/ //g'").$(pct exec $CTID -- bash -c "hostname -d | sed 's/ //g'"):8443 (Recommended to use FQDN)" )
-if [ -n "${IP}" ] && [ ! ${IP} == 'dhcp' ]; then
-  display_msg1+=( "https://${IP}:8443" )
-elif [ -n "${IP6}" ] && [ ! ${IP6} == 'dhcp' ]; then
-  display_msg1+=( "https://${IP6}:8443" )
-elif [ ${IP} == 'dhcp' ] || [ ${IP6} == 'dhcp' ]; then
+if [ -n "${IP}" ] && [ ! "$IP" = 'dhcp' ]
+then
+  display_msg1+=( "https://$IP:8443" )
+elif [ -n "${IP6}" ] && [ ! "$IP6" = 'dhcp' ]
+then
+  display_msg1+=( "https://$IP6:8443" )
+elif [ "$IP" = 'dhcp' ] || [ "$IP6" = 'dhcp' ]
+then
   display_msg1+=( "https://$(pct exec $CTID -- bash -c "hostname -I | sed 's/ //g'"):8443 (not static)" )
   display_msg1+=( "UniFi Controller must be set with a static IP address. Set a static IP using DHCP reservation at your router or DHCP server (i.e 192.168.1.4)." )
 fi

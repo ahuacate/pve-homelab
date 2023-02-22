@@ -10,8 +10,8 @@
 
 # Update these variables as required for your specific instance
 app="${REPO_PKG_NAME,,}"       # App name
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
+app_uid="$APP_USERNAME"        # App UID
+app_guid="$APP_GRPNAME"        # App GUID
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -36,10 +36,12 @@ chmod -R --reference=/usr/share/fonts/opentype /usr/share/fonts/googlefonts
 sudo fc-cache -fv
 
 # Install video drivers
-if [ $(ls -l /dev/dri | grep renderD128 > /dev/null; echo $?) == 0 ]; then
+if [ "$(ls -l /dev/dri | grep renderD128 > /dev/null; echo $?)" = 0 ]
+then
 	GPU=$(lspci | grep VGA | cut -d ":" -f3 | sed -e 's/^[ \t]*//')
 	# Intel GPU
-	if [[ ${GPU} =~ ^Intel.* ]]; then
+	if [[ "$GPU" =~ ^Intel.* ]]
+	then
 		# Install drivers
 		# apt-get install i965-va-driver -y
 		apt-get install intel-media-va-driver-non-free -y
@@ -113,10 +115,12 @@ su -c '/tmp/xrdp-installer-1.4.2.sh -s' admin
 
 
 #---- Configure Admin User profile
-if [ $(ls -l /dev/dri | grep renderD128 > /dev/null; echo $?) == 0 ]; then
+if [ "$(ls -l /dev/dri | grep renderD128 > /dev/null; echo $?)" = 0 ]
+then
 	GPU=$(lspci | grep VGA | cut -d ":" -f3 | sed -e 's/^[ \t]*//')
 	# Intel GPU
-	if [[ ${GPU} =~ ^Intel.* ]]; then
+	if [[ "$GPU" =~ ^Intel.* ]]
+	then
 		# Set user environment variable
 		# echo 'export LIBVA_DRIVER_NAME=i965' >> /home/admin/.profile
 		echo 'export LIBVA_DRIVER_NAME=iHD' >> /home/admin/.profile

@@ -38,8 +38,10 @@ SERVER="http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/${GU
 #---- Prerequisites
 
 # Check for TOTP extensions and upgrade if found
-for file in /etc/guacamole/extensions/guacamole-auth-totp*.jar; do
-  if [[ -f $file ]]; then
+for file in /etc/guacamole/extensions/guacamole-auth-totp*.jar
+do
+  if [[ -f $file ]]
+  then
     echo -e "${RED}WARNING:${NC}\nTOTP extension is already installed. Skipping this installation..."
     echo
     return
@@ -50,14 +52,15 @@ done
 
 # Download Guacamole extension
 wget -q --show-progress -O guacamole-auth-totp-${GUAC_VERSION}.tar.gz ${SERVER}/binary/guacamole-auth-totp-${GUAC_VERSION}.tar.gz
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]
+then
     echo -e "${RED}WARNING:${NC}\nFailed to download: ${WHITE}guacamole-auth-totp-${GUAC_VERSION}.tar.gz${NC}"
     echo
     return
 fi
 
 # Stop tomcat and guacamole
-service ${TOMCAT} stop
+service $TOMCAT stop
 service guacd stop
 
 # Install
@@ -70,7 +73,6 @@ rm -rf "guacamole-auth-totp-${GUAC_VERSION}"
 rm -f "guacamole-auth-totp-${GUAC_VERSION}.tar.gz"
 
 # Restart tomcat
-service ${TOMCAT} start
+service $TOMCAT start
 service guacd start
-
 #-----------------------------------------------------------------------------------
