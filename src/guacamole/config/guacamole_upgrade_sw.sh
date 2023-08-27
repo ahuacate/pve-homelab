@@ -5,30 +5,28 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+COMMON="$DIR/../../../common"
+SHARED="$DIR/../../../shared"
+
 #---- Dependencies -----------------------------------------------------------------
 #---- Static Variables -------------------------------------------------------------
-
-#---- Terminal settings
-RED=$'\033[0;31m'
-YELLOW=$'\033[1;33m'
-GREEN=$'\033[0;32m'
-WHITE=$'\033[1;37m'
-NC=$'\033[0m'
-UNDERLINE=$'\033[4m'
-printf '\033[8;40;120t'
-
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
 
+# Run Bash Header
+source $COMMON/bash/src/basic_bash_utility.sh
+
 # Update CT
 apt-get update -y 
 apt-get upgrade -y
 
 # Download upgrade script
-wget  -q --show-progress -O guac-upgrade.sh https://raw.githubusercontent.com/MysticRyuujin/guac-install/master/guac-upgrade.sh
+wget  -q --show-progress -O guac-upgrade.sh https://raw.githubusercontent.com/MysticRyuujin/guac-install/main/guac-upgrade.sh
 if [ $? -ne 0 ]
 then
   echo -e "${RED}WARNING:${NC}\nFailed to download: ${WHITE}guac-upgrade.sh${NC}"

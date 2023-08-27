@@ -1,6 +1,6 @@
 <h1>PVE Homelab</h1>
 
-Homelab focuses on everything related to Home Media, providing a range of PVE CT-based applications such as PiHole, UniFi-Controller, Guacamole, ddclient, and more. In addition, it offers an Easy Script Installer and Toolbox that automates many of the tasks, accompanied by step-by-step instructions.
+Homelab focuses on everything related to your Home network and management, providing a range of PVE CT-based applications such as PiHole, UniFi-Controller, Guacamole, ddclient, and more. In addition, it offers an Easy Script Installer and Toolbox that automates many of the tasks, accompanied by step-by-step instructions.
 
 However, before you begin using Medialab, it's crucial to ensure that your network, hardware, and NAS setup meet the prerequisites outlined in our guide. It's essential to read and follow this guide before proceeding.
 
@@ -41,11 +41,11 @@ It is essential to set your network's Local Domain or Search domain. For residen
 
 <h2>Easy Scripts</h2>
 
-Easy Scripts automate the installation and/or configuration processes with preset configurations. Simply `Cut & Paste` our Easy Script command into your terminal window, press `Enter` and follow the prompts and terminal instructions.
+Easy Scripts simplify the process of installing and configuring preset configurations. To use them, all you have to do is copy and paste the Easy Script command into your terminal window, hit Enter, and follow the prompts and terminal instructions.
 
-All Easy Scripts assumes your network is VLAN and DHCP IPv4 ready. If not, decline at the Easy Script prompt to accept our default settings (i.e Proceed with our Easy Script defaults (recommended) [y/n]? enter 'n'). You can then configure your all PVE container variables.
+Please note that all Easy Scripts assume that your network is VLAN and DHCP IPv4 ready. If this is not the case, you can decline the Easy Script prompt to accept our default settings. Simply enter 'n' to proceed without the default settings. After declining the default settings, you can configure all your PVE container variables.
 
-But PLEASE first read our guide so you fully understand the input requirements.
+However, before proceeding, we highly recommend that you read our guide to fully understand the input requirements.
 
 <h4><b>1) Easy Script installer</b></h4>
 
@@ -94,7 +94,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
         - [4.2.1. Configure Groups](#421-configure-groups)
         - [4.2.2. Configure Users](#422-configure-users)
         - [4.2.3. Add Connection - Guaca-RDP](#423-add-connection---guaca-rdp)
-    - [4.2. Guacamole Toolbox](#42-guacamole-toolbox)
+    - [4.3. Guacamole Toolbox](#43-guacamole-toolbox)
 - [5. Guaca-RDP CT](#5-guaca-rdp-ct)
     - [5.1. Installation](#51-installation)
     - [5.2. Setup Guaca-RDP](#52-setup-guaca-rdp)
@@ -102,9 +102,10 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
         - [5.2.2. GPU accelerated Firefox](#522-gpu-accelerated-firefox)
 - [6. UniFi Controller CT](#6-unifi-controller-ct)
     - [6.1. Installation](#61-installation)
-    - [Setup UniFi Controller](#setup-unifi-controller)
-    - [4.2. UniFi Controller Toolbox](#42-unifi-controller-toolbox)
-- [7. Patches and Fixes](#7-patches-and-fixes)
+    - [6.2. Setup UniFi Controller](#62-setup-unifi-controller)
+    - [6.3. UniFi Controller Toolbox](#63-unifi-controller-toolbox)
+- [7. Tails VM](#7-tails-vm)
+- [8. Patches and Fixes](#8-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -502,7 +503,7 @@ Navigate using the Guacamole web interface to `settings` > `Connections tab` > `
 
 And click `Save`.
 
-## 4.2. Guacamole Toolbox
+## 4.3. Guacamole Toolbox
 A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
 
 <hr>
@@ -543,15 +544,22 @@ Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Cont
 ## 6.1. Installation
 Use our Easy Script installer. Follow our Easy Script installation prompts.
 
-## Setup UniFi Controller
+## 6.2. Setup UniFi Controller
 UniFi Controller must be assigned a static IP address. Make a DHCP IP reservation at your DHCP server or router (i.e 192.168.1.4) and restart your UniFi Controller CT.
 
 In your web browser URL type `http://unifi-controller.local:8443`. The application's WebGUI front end will appear.
 
-## 4.2. UniFi Controller Toolbox
+## 6.3. UniFi Controller Toolbox
 A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
 
 <hr>
 
-# 7. Patches and Fixes
+# 7. Tails VM
+Recommend this tutorial to create a Tails VM: <a href="https://tultr.com/tutorial-how-to-install-tails-os-in-a-proxmox-vm/" target="_blank">here</a>.
+
+If you're using a VPN service, think about directing the traffic through the VPN VLAN tag within the PVE GUI.
+
+<hr>
+
+# 8. Patches and Fixes
 

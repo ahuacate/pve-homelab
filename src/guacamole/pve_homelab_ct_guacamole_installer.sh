@@ -102,7 +102,7 @@ GW6=''
 
 #---- PVE CT
 #----[CT_GENERAL_OPTIONS]
-# Unprivileged container status 
+# Unprivileged container. '0' to disable, '1' to enable/yes.
 CT_UNPRIVILEGED='1'
 # Memory swap
 CT_SWAP='512'
@@ -135,10 +135,13 @@ CT_SIZE='5'
 CT_ACL='0'
 
 #----[CT_STARTUP_OPTIONS]
-# Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ). Order is a non-negative number defining the general startup order. Up=1 means first to start up. Shutdown in done with reverse ordering so down=1 means last to shutdown.
-CT_ORDER='2'
-CT_UP='2'
-CT_DOWN='2'
+# Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ).
+# Order is a non-negative number defining the general startup order. Up=1 means first to start up. Shutdown in done with reverse ordering so down=1 means last to shutdown.
+# Up: Startup delay. Defines the interval between this container start and subsequent containers starts. For example, set it to 240 if you want to wait 240 seconds before starting other containers.
+# Down: Shutdown timeout. Defines the duration in seconds Proxmox VE should wait for the container to be offline after issuing a shutdown command. By default this value is set to 60, which means that Proxmox VE will issue a shutdown request, wait 60s for the machine to be offline, and if after 60s the machine is still online will notify that the shutdown action failed. 
+CT_ORDER='3'
+CT_UP='30'
+CT_DOWN='60'
 
 #----[CT_NET_OPTIONS]
 # Name of the network device as seen from inside the VM/CT.
@@ -156,6 +159,10 @@ CTID='250'
 APP_USERNAME='home'
 # App user group
 APP_GRPNAME='homelab'
+
+#----[REPO_PKG_NAME]
+# Repo package name
+REPO_PKG_NAME='guacamole'
 
 
 #---- Other Files ------------------------------------------------------------------
@@ -194,29 +201,20 @@ fi
 
 #---- Guacamole --------------------------------------------------------------------
 
-section "Install ${HOSTNAME^}"
-
 #---- Prerequisites
 
-# Start container
-pct_start_waitloop
+section "Prerequisites"
 
-# Update locales
-pct exec $CTID -- bash -c 'export LANGUAGE=en_US.UTF-8'
-pct exec $CTID -- bash -c 'export LANG=en_US.UTF-8'
-pct exec $CTID -- sudo locale-gen en_US.UTF-8
+# Pushing scripts to CT
+msg "Pushing repo scripts to CT..."
+pct push $CTID $REPO_TEMP/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
+pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
 
-# Update Ubuntu
-pct exec $CTID -- apt-get update -yqq > /dev/null
-pct exec $CTID -- apt-get upgrade -yqq > /dev/null
 
-# Add Packages
-msg "Updating ${OSTYPE^} packages (be patient, might take a while)..."
-pct exec $CTID -- apt-get install software-properties-common -qqy > /dev/null
-pct exec $CTID -- add-apt-repository -y universe
-pct exec $CTID -- apt-get -qqy update > /dev/null
+#---- Set Guacamole install options
 
-#---- Install Guacamole
+section "Install ${HOSTNAME^}"
+
 msg_box "#### PLEASE READ CAREFULLY ####\n
 This install uses the 'MysticRyuujin' installation script. Thanks to 'MysticRyuujin' for maintaining this script.
 
@@ -259,10 +257,12 @@ elif [ "$RESULTS" = TYPE03 ]; then
   MFA='nomfa'
 fi
 
-# Run Installer
+
+#---- Run Guacamole installer
+
+# Run the Guacamole installer
 msg "Running MysticRyuujin/guac-install script (be patient, might take a while)..."
-pct push $CTID $SRC_DIR/guacamole/guacamole_sw.sh /tmp/guacamole_sw.sh -perms 755
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME MFA=$MFA USER_PWD=$USER_PWD && /tmp/guacamole_sw.sh"
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME MFA=$MFA USER_PWD=\"$USER_PWD\" && /tmp/$GIT_REPO/src/$REPO_PKG_NAME/guacamole_sw.sh"
 
 # Check SMTP server status for emailing login credentials
 if [ "$SMTP_STATUS" = 1 ]
@@ -323,7 +323,7 @@ section "Completion Status."
 # Check for ZFS install error
 if [[ $(pvesm status | grep '^local-zfs') ]]
 then
-  warn "If you are seeing this warning its because your PVE is on ZFS. At the time of writing mysql-server fails when the LXC is on ZFS. Guacamole installs on EXT4 without issues."
+  warn "If you are seeing this warning its because your PVE is on ZFS. At the time of writing mysql-server fails when the LXC is on ZFS. Updating your PVE host patches the issue. Guacamole installs on EXT4 without issues."
 fi
 
 #---- Set display text

@@ -107,7 +107,7 @@ GW6=''
 
 #---- PVE CT
 #----[CT_GENERAL_OPTIONS]
-# Unprivileged container status 
+# Unprivileged container. '0' to disable, '1' to enable/yes.
 CT_UNPRIVILEGED='1'
 # Memory swap
 CT_SWAP='512'
@@ -140,10 +140,13 @@ CT_SIZE='10'
 CT_ACL='0'
 
 #----[CT_STARTUP_OPTIONS]
-# Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ). Order is a non-negative number defining the general startup order. Up=1 means first to start up. Shutdown in done with reverse ordering so down=1 means last to shutdown.
+# Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ).
+# Order is a non-negative number defining the general startup order. Up=1 means first to start up. Shutdown in done with reverse ordering so down=1 means last to shutdown.
+# Up: Startup delay. Defines the interval between this container start and subsequent containers starts. For example, set it to 240 if you want to wait 240 seconds before starting other containers.
+# Down: Shutdown timeout. Defines the duration in seconds Proxmox VE should wait for the container to be offline after issuing a shutdown command. By default this value is set to 60, which means that Proxmox VE will issue a shutdown request, wait 60s for the machine to be offline, and if after 60s the machine is still online will notify that the shutdown action failed. 
 CT_ORDER='2'
-CT_UP='2'
-CT_DOWN='2'
+CT_UP='30'
+CT_DOWN='60'
 
 #----[CT_NET_OPTIONS]
 # Name of the network device as seen from inside the VM/CT.
@@ -243,7 +246,7 @@ then
 elif [ "$IP" = 'dhcp' ] || [ "$IP6" = 'dhcp' ]
 then
   display_msg1+=( "https://$(pct exec $CTID -- bash -c "hostname -I | sed 's/ //g'"):8443 (not static)" )
-  display_msg1+=( "UniFi Controller must be set with a static IP address. Set a static IP using DHCP reservation at your router or DHCP server (i.e 192.168.1.4)." )
+  display_msg1+=( "UniFi Controller must be set with a static IP address. Set the container with a static IP or if using a non UniFi DHCP server make a reservation at this DHCP server (i.e 192.168.1.4)." )
 fi
 
 msg_box "UniFi Controller installation was a success. Your UniFi Controller application address:

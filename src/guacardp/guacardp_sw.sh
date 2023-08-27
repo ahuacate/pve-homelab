@@ -5,6 +5,11 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+COMMON="$DIR/../../common"
+SHARED="$DIR/../../shared"
+
 #---- Dependencies -----------------------------------------------------------------
 #---- Static Variables -------------------------------------------------------------
 
@@ -18,6 +23,9 @@ app_guid="$APP_GRPNAME"        # App GUID
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
+
+# Run Bash Header
+source $COMMON/bash/src/basic_bash_utility.sh
 
 # Update locales
 sudo locale-gen en_US.UTF-8
@@ -53,6 +61,8 @@ apt-get install ffmpeg -y
 
 
 #---- Create new user
+
+# Add user
 useradd -m -p $(perl -e 'print crypt($ARGV[0], "password")' ahuacate) admin
 usermod -aG sudo admin
 usermod -s /bin/bash admin
@@ -61,6 +71,7 @@ echo "admin ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/admin
 
 
 #---- Install RDP SW
+
 #  Install the desktop environment
 apt-get install xfce4 xfce4-goodies -y
 # Fix /etc/nsswitch.conf after xfce4 install
@@ -98,15 +109,19 @@ EOF
 
 
 #---- Install firefox
+
 # Add the Mozilla Team PPA
 add-apt-repository ppa:mozillateam/ppa -y 2> /dev/null
 # Increase the priority of it's firefox package
 printf 'Package: firefox\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1500\n' | tee /etc/apt/preferences.d/mozilla-firefox
 # Install Firefox
 apt-get install firefox -y
+# Copy Firefox bookmark preset file to CT
+cp $DIR/config/bookmarks-ahuacate.json /home/admin/Desktop/bookmarks-ahuacate.json
 
 
 #---- Configure audio
+
 wget http://c-nergy.be/downloads/xRDP/xrdp-installer-1.4.2.zip -P /tmp
 unzip /tmp/xrdp-installer-1.4.2.zip -d /tmp
 sleep 1
@@ -115,6 +130,7 @@ su -c '/tmp/xrdp-installer-1.4.2.sh -s' admin
 
 
 #---- Configure Admin User profile
+
 if [ "$(ls -l /dev/dri | grep renderD128 > /dev/null; echo $?)" = 0 ]
 then
 	GPU=$(lspci | grep VGA | cut -d ":" -f3 | sed -e 's/^[ \t]*//')

@@ -5,6 +5,11 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+COMMON="$DIR/../../common"
+SHARED="$DIR/../../shared"
+
 #---- Dependencies -----------------------------------------------------------------
 #---- Static Variables -------------------------------------------------------------
 
@@ -18,7 +23,7 @@ mfa="$MFA"                # Two-factor authentication (TOTP, Duo or none)
 #---- Other Variables --------------------------------------------------------------
 
 # Guacamole latest version
-GUAC_VERSION="${GUAC_VERSION:-1.4.0}"
+GUAC_VERSION="${GUAC_VERSION:-1.5.1}"
 
 #---- Firewall variables
 # Guacamole port
@@ -33,29 +38,56 @@ LOCAL_NET=$(hostname -I | awk -F'.' -v OFS="." '{ print $1,$2,"0.0/24" }')
 
 #---- Prerequisites
 
+# Run Bash Header
+source $COMMON/bash/src/basic_bash_utility.sh
+
+# Update locales
+export LANGUAGE=en_US.UTF-8
+export LANG=en_US.UTF-8
+sudo locale-gen en_US.UTF-8
+
+# Update Ubuntu
+apt-get update -y
+apt-get upgrade -y
+
+# Install Crudini
+apt-get install crudini -y
+
+# Add Packages
+apt-get install software-properties-common -y
+add-apt-repository -y universe
+apt-get update -y
+
+
+#---- Install Guacamole SW
+
 # Download upgrade script
-wget -q --show-progress -O guac-install.sh https://raw.githubusercontent.com/MysticRyuujin/guac-install/master/guac-install.sh
+wget -q --show-progress -O guac-install.sh https://raw.githubusercontent.com/MysticRyuujin/guac-install/main/guac-install.sh
 if [ $? -ne 0 ]
 then
-  echo -e "${RED}WARNING:${NC}\nFailed to download: ${WHITE}guac-install.sh${NC}"
+  echo -e "WARNING:${NC}\nFailed to download: ${WHITE}guac-install.sh${NC}"
   echo
   return
 fi
-# Set permissions
+# Set script permissions
 chmod +x guac-install.sh
 
-#---- Install Guacamole
-./guac-install.sh --mysqlpwd ${user_pwd} --guacpwd ${user_pwd} --installmysql --${mfa}
+# Run installer
+./guac-install.sh --mysqlpwd ${user_pwd} --guacpwd ${user_pwd} --${mfa} --installmysql 2> /dev/null
 
-#---- Configure firewall
+# Allow ports
 sudo ufw allow $GUAC_PORT/tcp
 sudo ufw allow $SSH_PORT
 # Enable ufw
 sudo ufw enable
 sudo ufw reload
 
+# Run guacamole tune
+source $DIR/config/guacamole_tuneup.sh
+
 
 #---- Install fail2ban
+
 # Install fail2ban
 apt-get install fail2ban -y
 
@@ -84,6 +116,7 @@ failregex = \bAuthentication attempt from \[<HOST>(?:,.*)?\] for user ".*" faile
 ignoreregex =
 EOF
 
-# Restart fail2ban
-sudo service fail2ban restart
+# Start fail2ban
+systemctl enable fail2ban.service
+pct_start_systemctl "fail2ban.service"
 #-----------------------------------------------------------------------------------

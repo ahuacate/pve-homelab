@@ -5,22 +5,18 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+COMMON="$DIR/../../../common"
+SHARED="$DIR/../../../shared"
+
 #---- Dependencies -----------------------------------------------------------------
 #---- Static Variables -------------------------------------------------------------
-
-#---- Terminal settings
-RED=$'\033[0;31m'
-YELLOW=$'\033[1;33m'
-GREEN=$'\033[0;32m'
-WHITE=$'\033[1;37m'
-NC=$'\033[0m'
-UNDERLINE=$'\033[4m'
-printf '\033[8;40;120t'
 
 #---- Other Variables --------------------------------------------------------------
 
 # Guacamole latest version
-GUAC_VERSION="${GUAC_VERSION:-1.4.0}"
+GUAC_VERSION="${GUAC_VERSION:-1.5.1}"
 
 # Get Tomcat Version
 TOMCAT=$(ls /etc/ | grep tomcat)
@@ -36,6 +32,9 @@ SERVER="http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/${GU
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
+
+# Run Bash Header
+source $COMMON/bash/src/basic_bash_utility.sh
 
 # Check for Duo extensions and upgrade if found
 for file in /etc/guacamole/extensions/guacamole-auth-duo*.jar
@@ -59,9 +58,9 @@ then
   return
 fi
 
-# Stop tomcat and guacamole
-service $TOMCAT stop
-service guacd stop
+# Stop services
+pct_stop_systemctl "$TOMCAT"
+pct_stop_systemctl "guacd"
 
 # Install
 tar -xzf guacamole-auth-duo-${GUAC_VERSION}.tar.gz
@@ -72,7 +71,7 @@ echo -e "Duao extension status: ${YELLOW}installed${NC}"
 rm -rf "guacamole-auth-duo-${GUAC_VERSION}"
 rm -f "guacamole-auth-duo-${GUAC_VERSION}.tar.gz"
 
-# Restart tomcat
-service $TOMCAT restart
-service guacd restart
+# Restart services
+pct_start_systemctl "$TOMCAT"
+pct_start_systemctl "guacd"
 #-----------------------------------------------------------------------------------
