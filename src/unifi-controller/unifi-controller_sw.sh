@@ -76,4 +76,16 @@ sudo service fail2ban restart
 
 # Download GlennR install script
 rm unifi-latest.sh &> /dev/null; wget https://get.glennr.nl/unifi/install/install_latest/unifi-latest.sh && bash unifi-latest.sh --skip --skip-swap --add-repository --local-controller
+
+#---- Install UniFi autobackup Cron copy script
+
+# Replace variables with values in the original script
+sed -i -e "s|^app=.*|app=\"$app\"|g" \
+    -e "s|^app_uid=.*|app_uid=\"$app_uid\"|g" \
+    -e "s|^app_guid=.*|app_guid=\"$app_guid\"|g" \
+    /tmp/unifi-controller_backup.sh
+
+# Copy 'unifi-controller_backup.sh' to /etc/cron.daily/
+cp -f /tmp/unifi-controller_backup.sh /etc/cron.daily/
+chmod +x /tmp/unifi-controller_backup.sh
 #-----------------------------------------------------------------------------------

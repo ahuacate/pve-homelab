@@ -47,7 +47,7 @@ PRESET_VAR_SRC="$( dirname "${BASH_SOURCE[0]}" )/$( basename "${BASH_SOURCE[0]}"
 # VM Type ( 'ct' or 'vm' only lowercase )
 VM_TYPE='ct'
 # Use DHCP. '0' to disable, '1' to enable.
-NET_DHCP='1'
+NET_DHCP='0'
 #  Set address type 'dhcp4'/'dhcp6' or '0' to disable.
 NET_DHCP_TYPE='dhcp4'
 # CIDR IPv4
@@ -228,6 +228,7 @@ pct_start_waitloop
 
 # UniFi SW
 pct push $CTID $SRC_DIR/unifi-controller/unifi-controller_sw.sh /tmp/unifi-controller_sw.sh -perms 755
+pct push $CTID $SRC_DIR/unifi-controller/config/unifi-controller_backup.sh /tmp/unifi-controller_backup.sh -perms 755
 pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/unifi-controller_sw.sh"
 
 #---- Finish Line ------------------------------------------------------------------
@@ -246,7 +247,7 @@ then
 elif [ "$IP" = 'dhcp' ] || [ "$IP6" = 'dhcp' ]
 then
   display_msg1+=( "https://$(pct exec $CTID -- bash -c "hostname -I | sed 's/ //g'"):8443 (not static)" )
-  display_msg1+=( "UniFi Controller must be set with a static IP address. Set the container with a static IP or if using a non UniFi DHCP server make a reservation at this DHCP server (i.e 192.168.1.4)." )
+  display_msg1+=( "UniFi Controller must be set with a static IP address. Set the container with a static IP or if using a non UniFi DHCP server make a DHCP IP reservation (i.e 192.168.1.4). Also add the hostname $(pct exec $CTID -- bash -c "hostname -I | sed 's/ //g'") to your PiHole Local DNS Records." )
 fi
 
 msg_box "UniFi Controller installation was a success. Your UniFi Controller application address:
