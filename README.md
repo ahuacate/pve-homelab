@@ -100,6 +100,11 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [5.2. Setup Guaca-RDP](#52-setup-guaca-rdp)
         - [5.2.1. Firefox bookmarks](#521-firefox-bookmarks)
         - [5.2.2. GPU accelerated Firefox](#522-gpu-accelerated-firefox)
+- [5. Tailscale CT](#5-tailscale-ct)
+    - [5.1. Installation](#51-installation-1)
+    - [5.2. Tailscale node login](#52-tailscale-node-login)
+        - [5.2.1. Firefox bookmarks](#521-firefox-bookmarks-1)
+        - [5.2.2. GPU accelerated Firefox](#522-gpu-accelerated-firefox-1)
 - [6. UniFi Controller CT](#6-unifi-controller-ct)
     - [6.1. Installation](#61-installation)
     - [6.2. Setup UniFi Controller](#62-setup-unifi-controller)
@@ -526,6 +531,38 @@ Navigate using the Firefox web interface `Settings` > `Bookmarks` > `Manage book
 Connect to Guaca-RDP using any remote connect package (i.e Windows Remote Desktop Connection).
 
 Guaca-RDP is preinstalled with Firefox. To enable VA-API GPU acceleration you need to perform some Firefox tuning.
+
+Navigate using the Firefox web interface and input the address `about:config` and click `Accept the Risk and Continue`. Search for the following settings and configure them as shown in the table below.
+
+| Preference Name | Flag Value
+| :--- | :---
+| media.ffmpeg.vaapi.enabled | true
+| gfx.webrender.enabled | true
+| gfx.webrender.all | true
+| layers.acceleration.force-enabled | true
+
+<hr>
+
+# 5. Tailscale CT
+Tailscale is a software-defined networking solution that establishes secure communication between devices over the internet. It creates a virtual private network (VPN) that allows devices to interact as if they were on the same local network.
+
+The Tailscale host CT node is a Ubuntu machine with remote desktop (RDP) and preinstalled with Mozilla Firefox.
+
+## 5.1. Installation
+Use our Easy Script installer. Follow our Easy Script installation prompts.
+
+## 5.2. Tailscale node login
+The default Tailscale node Ubuntu credentials are: username `admin` and password `ahuacate`.
+
+### 5.2.1. Firefox bookmarks
+We have created a Firefox bookmark list of all our Ahuacate CT URLs.
+
+Navigate using the Firefox web interface `Settings` > `Bookmarks` > `Manage bookmarks` > `Import and Backup` > `Restore` > `Choose File` and browse to Desktop file `bookmarks-ahuacate.json`. Click `Open` to import.
+
+### 5.2.2. GPU accelerated Firefox
+Connect to the Tailscale node using any remote connect package (i.e Windows Remote Desktop Connection) and IP address obtained from Tailscale.
+
+Tailscale node is preinstalled with Firefox. To enable VA-API GPU acceleration you need to perform some Firefox tuning.
 
 Navigate using the Firefox web interface and input the address `about:config` and click `Accept the Risk and Continue`. Search for the following settings and configure them as shown in the table below.
 

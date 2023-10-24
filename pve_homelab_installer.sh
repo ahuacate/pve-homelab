@@ -37,6 +37,7 @@ vm_LIST=( "pihole:pihole:ct:DNS sinkhole with optional dhcp server"
 "ddclient:ddclient:ct:dynamic dns updater"
 "guacamole:guacamole:ct:clientless remote desktop gateway"
 "guacardp:guacardp:ct:guacamole rdp client"
+"tailscale:tailscale:ct:Zero config VPN service for remote access"
 "unifi-controller:unifi-controller:ct:unifi controller" )
 
 #-----------------------------------------------------------------------------------
