@@ -16,11 +16,11 @@
 #---- Source -----------------------------------------------------------------------
 #---- Dependencies -----------------------------------------------------------------
 
-# Check PVE host subid mapping
-check_host_subid
+# # Check PVE host subid mapping
+# check_host_subid
 
-# Check SMTP Status
-check_smtp_status
+# # Check SMTP Status
+# check_smtp_status
 
 #---- Static Variables -------------------------------------------------------------
 
@@ -128,16 +128,16 @@ CT_FUSE='0'
 # For unprivileged containers only: Allow the use of the keyctl() system call.
 CT_KEYCTL='0'
 # Allow mounting file systems of specific types. (Use 'nfs' or 'cifs' or 'nfs;cifs' for both or leave empty "")
-CT_MOUNT=''
+CT_MOUNT='nfs;cifs'
 # Allow nesting. Best used with unprivileged containers with additional id mapping.
-CT_NESTING='0'
+CT_NESTING='1'
 # A public key for connecting to the root account over SSH (insert path).
 
 #----[CT_ROOTFS_OPTIONS]
 # Virtual Disk Size (GB).
 CT_SIZE='10'
 # Explicitly enable or disable ACL support.
-CT_ACL='0'
+CT_ACL='1'
 
 #----[CT_STARTUP_OPTIONS]
 # Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ).

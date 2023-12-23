@@ -128,7 +128,7 @@ CT_NESTING='0'
 # Virtual Disk Size (GB).
 CT_SIZE='5'
 # Explicitly enable or disable ACL support.
-CT_ACL='0'
+CT_ACL='1'
 
 #----[CT_STARTUP_OPTIONS]
 # Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ).

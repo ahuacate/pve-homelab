@@ -2,7 +2,7 @@
 
 Homelab focuses on everything related to your Home network and management, providing a range of PVE CT-based applications such as PiHole, UniFi-Controller, Guacamole, ddclient, and more. In addition, it offers an Easy Script Installer and Toolbox that automates many of the tasks, accompanied by step-by-step instructions.
 
-However, before you begin using Medialab, it's crucial to ensure that your network, hardware, and NAS setup meet the prerequisites outlined in our guide. It's essential to read and follow this guide before proceeding.
+However, before you begin using Homelab, it's crucial to ensure that your network, hardware, and NAS setup meet the prerequisites outlined in our guide. It's essential to read and follow this guide before proceeding.
 
 <h2>Prerequisites</h2>
 
@@ -28,7 +28,7 @@ However, before you begin using Medialab, it's crucial to ensure that your netwo
 	- nas-0X-transcode (required for CCTV applications/Home-Assistant)
 	- nas-0X-video (required for CCTV applications/Home-Assistant)
 	
-	You must have a running network File Server (NAS) with ALL of the above NFS and/or CIFS backend share points configured on your PVE host 'pve-01'.
+You must have a running network File Server (NAS) with ALL of the above NFS and/or CIFS backend share points configured on your PVE host 'pve-01'.
 
 **Optional Prerequisites**
 - [ ] pfSense HA-Proxy for remote access (i.e Guacamole)
@@ -79,7 +79,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [1.1. Unprivileged CTs and File Permissions](#11-unprivileged-cts-and-file-permissions)
         - [1.1.1. Unprivileged container mapping - homelab](#111-unprivileged-container-mapping---homelab)
         - [1.1.2. Allow a LXC to perform mapping on the Proxmox host - homelab](#112-allow-a-lxc-to-perform-mapping-on-the-proxmox-host---homelab)
-        - [1.1.3. Create a newuser 'home' in a LXC](#113-create-a-newuser-home-in-a-lxc)
+        - [1.1.3. Create a new user 'home' in a LXC](#113-create-a-new-user-home-in-a-lxc)
 - [2. Pi-Hole CT](#2-pi-hole-ct)
     - [2.1. Configure Pi-Hole](#21-configure-pi-hole)
     - [2.2. Manual Conditional Forwarding entries](#22-manual-conditional-forwarding-entries)
@@ -100,17 +100,19 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [5.2. Setup Guaca-RDP](#52-setup-guaca-rdp)
         - [5.2.1. Firefox bookmarks](#521-firefox-bookmarks)
         - [5.2.2. GPU accelerated Firefox](#522-gpu-accelerated-firefox)
-- [5. Tailscale CT](#5-tailscale-ct)
-    - [5.1. Installation](#51-installation-1)
-    - [5.2. Tailscale node login](#52-tailscale-node-login)
-        - [5.2.1. Firefox bookmarks](#521-firefox-bookmarks-1)
-        - [5.2.2. GPU accelerated Firefox](#522-gpu-accelerated-firefox-1)
-- [6. UniFi Controller CT](#6-unifi-controller-ct)
+- [6. Tailscale CT](#6-tailscale-ct)
     - [6.1. Installation](#61-installation)
-    - [6.2. Setup UniFi Controller](#62-setup-unifi-controller)
-    - [6.3. UniFi Controller Toolbox](#63-unifi-controller-toolbox)
-- [7. Tails VM](#7-tails-vm)
-- [8. Patches and Fixes](#8-patches-and-fixes)
+    - [6.2. Connect and authenticate to Tailscale network](#62-connect-and-authenticate-to-tailscale-network)
+    - [6.3. Tailscale node RDP login](#63-tailscale-node-rdp-login)
+        - [6.3.1. Firefox bookmarks](#631-firefox-bookmarks)
+        - [6.3.2. GPU accelerated Firefox](#632-gpu-accelerated-firefox)
+    - [6.4. Setup your Tailscale CT for network device ssh connections](#64-setup-your-tailscale-ct-for-network-device-ssh-connections)
+- [7. UniFi Controller CT](#7-unifi-controller-ct)
+    - [7.1. Installation](#71-installation)
+    - [7.2. Setup UniFi Controller](#72-setup-unifi-controller)
+    - [7.3. UniFi Controller Toolbox](#73-unifi-controller-toolbox)
+- [8. Tails VM](#8-tails-vm)
+- [9. Patches and Fixes](#9-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -138,7 +140,7 @@ Our default PVE Users (UID) and Groups (GUID) in all our MediaLab, HomeLab and P
 Our fix is done in three stages in our Easy Scripts when you create any new MediaLab application CT.
 
 ### 1.1.1. Unprivileged container mapping - homelab
-To change a PVE containers mapping we change the PVE container UID and GUID in the file `/etc/pve/lxc/container-id.conf` after our Easy Script creates a new Homelab application CT.
+To change a PVE container mapping we change the PVE container UID and GUID in the file `/etc/pve/lxc/container-id.conf` after our Easy Script creates a new Homelab application CT.
 ```
 # User media | Group homelab
 echo -e "lxc.idmap: u 0 100000 1606
@@ -173,7 +175,7 @@ The above edits add an ID map range from 65604 > 65704 in the container to the s
 
 The above edit is done automatically in our Easy Script.
 
-### 1.1.3. Create a newuser 'home' in a LXC
+### 1.1.3. Create a new user 'home' in a LXC
 Our PVE User `home` and Group `homelab` are the defaults in all our Homelab CTs. This means all new files created by our Homelab CTs have a common UID and GUID so NAS file creation, ownership and access permissions are fully maintained within the Group `homelab`.
 
 The Linux User and Group settings we use in all MediaLab CTs are:
@@ -543,26 +545,43 @@ Navigate using the Firefox web interface and input the address `about:config` an
 
 <hr>
 
-# 5. Tailscale CT
+# 6. Tailscale CT
 Tailscale is a software-defined networking solution that establishes secure communication between devices over the internet. It creates a virtual private network (VPN) that allows devices to interact as if they were on the same local network.
 
 The Tailscale host CT node is a Ubuntu machine with remote desktop (RDP) and preinstalled with Mozilla Firefox.
 
-## 5.1. Installation
+You can remotely connect to your Tailscale node to remotely manage your network.
+
+## 6.1. Installation
 Use our Easy Script installer. Follow our Easy Script installation prompts.
 
-## 5.2. Tailscale node login
-The default Tailscale node Ubuntu credentials are: username `admin` and password `ahuacate`.
+## 6.2. Connect and authenticate to Tailscale network
+We recommend you connect and authenticate your Tailscale CT to your private tailnet network with SSH support. Tailscale SSH allows Tailscale to manage the authentication and authorization of SSH connections on your private tailnet.
 
-### 5.2.1. Firefox bookmarks
+Historically, to secure an SSH connection, you generate a keypair on the machine you are connecting from (known as the client), with the private key stored on the client, and the public key distributed to the device you want to connect to (known as the server). This lets the server authenticate communication from the client.
+
+With Tailscale, you can already connect machines in your network, and encrypt communications end-to-end from one point to another—and this includes, for example, SSHing from your work laptop to your work desktop. Tailscale also knows your identity, since that’s how you connected to your tailnet. When you enable Tailscale SSH, Tailscale claims port 22 for the Tailscale IP address (that is, only for traffic coming from your tailnet) on the devices for which you have enabled Tailscale SSH. This routes SSH traffic for the device from the Tailscale network to an SSH server run by Tailscale, instead of your standard SSH server.
+
+Connect and authenticate your Tailscale CT with SSH support:
+
+```
+sudo tailscale up --ssh
+```
+
+You will be prompted with a webpage URL to authenticate and login using an authorization method. We use GMail for home use. For home users, consider disabling your Tailscale key expiry. To disable Tailscale key expiry open the 'Machines page' of the admin console webpage, select your Tailscale server and in the far right menu select the 'Disable Key Expiry' option.
+
+## 6.3. Tailscale node RDP login
+The default Tailscale CT RDP Ubuntu credentials are: username `admin` and password `ahuacate`.
+
+### 6.3.1. Firefox bookmarks
 We have created a Firefox bookmark list of all our Ahuacate CT URLs.
 
-Navigate using the Firefox web interface `Settings` > `Bookmarks` > `Manage bookmarks` > `Import and Backup` > `Restore` > `Choose File` and browse to Desktop file `bookmarks-ahuacate.json`. Click `Open` to import.
+Navigate using the Firefox web interface Settings > `Bookmarks` > `Manage bookmarks` > `Import and Backup` > `Restore` > `Choose File` and browse to Desktop file `bookmarks-ahuacate.json`. Click `Open` to import.
 
-### 5.2.2. GPU accelerated Firefox
+### 6.3.2. GPU accelerated Firefox
 Connect to the Tailscale node using any remote connect package (i.e Windows Remote Desktop Connection) and IP address obtained from Tailscale.
 
-Tailscale node is preinstalled with Firefox. To enable VA-API GPU acceleration you need to perform some Firefox tuning.
+The Tailscale node is preinstalled with Firefox. To enable VA-API GPU acceleration you need to perform some Firefox tuning.
 
 Navigate using the Firefox web interface and input the address `about:config` and click `Accept the Risk and Continue`. Search for the following settings and configure them as shown in the table below.
 
@@ -573,30 +592,94 @@ Navigate using the Firefox web interface and input the address `about:config` an
 | gfx.webrender.all | true
 | layers.acceleration.force-enabled | true
 
+Restart Firefox web browser.
+
+## 6.4. Setup your Tailscale CT for network device ssh connections
+After establishing a connection to your Tailscale Central Team (CT), you gain the ability to administer your network devices remotely through either SSH or a web browser. For SSH access, it might be necessary to incorporate your device's private SSH key(s) into the Tailscale CT user folder located at ~/.ssh.
+
+In the following demonstration, we generate an SSH key pair specially designated for Proxmox hosts to facilitate Tailscale CT connectivity. To distinguish this new key, we append "-pve" to its name. Always ensure that you securely store both the private and public key pairs in a safe location.
+
+In this illustration, we create the keys utilizing a Proxmox host.
+```
+# Generate new ssh keypair
+ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519-pve -N ""
+
+# Copy ssh public key to Proxmox authorized_keys (localhost)
+ssh-copy-id -i ~/.ssh/id_ed25519-pve.pub localhost
+
+# Copy ssh public key to Proxmox authorized_keys (other PVE hosts)
+ssh-copy-id -i ~/.ssh/id_ed25519-pve.pub root@192.168.1.10X
+```
+
+Copy ssh private key to your Tailscale CT (id_ed25519-pve):
+```
+# Copy ssh private key to Tailscale CT:
+scp ~/.ssh/id_ed25519-pve admin@tailscale.local:~/.ssh/
+```
+
+If you want to add aliases for ssh hosts in your ssh configuration file, you can do so by creating named sections with custom configuration options. These sections can be used to define aliases for remote hosts with their own settings. Here's an example of you can define aliases in your `~/.ssh/config`:
+
+```
+Host pve-01
+  HostName 192.168.1.101
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-02
+  HostName 192.168.1.102
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-03
+  HostName 192.168.1.103
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-04
+  HostName 192.168.1.104
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-05
+  HostName 192.168.1.105
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host nas-01
+  HostName nas-01.local
+  User admin
+  IdentityFile ~/.ssh/id_ed25519-pve
+```
+
+Set the appropriate permissions:
+```
+chmod 600 ~/.ssh/config
+```
+
 <hr>
 
-# 6. UniFi Controller CT
+# 7. UniFi Controller CT
 Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
 
-## 6.1. Installation
+## 7.1. Installation
 Use our Easy Script installer. Follow our Easy Script installation prompts.
 
-## 6.2. Setup UniFi Controller
+## 7.2. Setup UniFi Controller
 UniFi Controller must be assigned a static IP address. Make a DHCP IP reservation at your DHCP server or router (i.e 192.168.1.4) and restart your UniFi Controller CT.
 
 In your web browser URL type `http://unifi-controller.local:8443`. The application's WebGUI front end will appear.
 
-## 6.3. UniFi Controller Toolbox
+## 7.3. UniFi Controller Toolbox
 A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
 
 <hr>
 
-# 7. Tails VM
+# 8. Tails VM
 Recommend this tutorial to create a Tails VM: <a href="https://tultr.com/tutorial-how-to-install-tails-os-in-a-proxmox-vm/" target="_blank">here</a>.
 
 If you're using a VPN service, think about directing the traffic through the VPN VLAN tag within the PVE GUI.
 
 <hr>
 
-# 8. Patches and Fixes
+# 9. Patches and Fixes
 

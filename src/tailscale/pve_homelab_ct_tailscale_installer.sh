@@ -136,7 +136,7 @@ CT_NESTING='0'
 # Virtual Disk Size (GB).
 CT_SIZE='10'
 # Explicitly enable or disable ACL support.
-CT_ACL='0'
+CT_ACL='1'
 
 #----[CT_STARTUP_OPTIONS]
 # Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ).
@@ -235,20 +235,22 @@ unset display_msg1
 # Web access URL
 display_msg1=( "SSH log into your Proxmox host and run these commands:" )
 display_msg1+=( "  --  pct enter $CTID" )
-display_msg1+=( "  --  sudo tailscale up" )
+display_msg1+=( "  --  sudo tailscale up --ssh" )
 display_msg1+=( "Follow the terminal screen directions." )
 
-msg_box "Tailscale CT node installation was a success. Your next step is to connect and authenticate your Tailscale Ubuntu CT node with Tailscale:  
+msg_box "Tailscale CT installation was a success. Your next step is to connect and authenticate your Tailscale Ubuntu CT with your Tailscale tailnet private network:  
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-Your Tailscale CT node is a Ubuntu Linux machine prebuilt with remote desktop (RDP) and Mozilla Firefox. Your Ubuntu login credentials are:
+The next step is to use a authentication method. We use Gmail. Then to disable Tailscale key expiry open the 'Machines page' of the admin console webpage, select your Tailscale server and in the far right menu select the 'Disable Key Expiry' option.
+
+Your Tailscale CT is a Ubuntu Linux machine prebuilt with remote desktop (RDP) support and Mozilla Firefox. Your RDP Ubuntu login credentials are:
 
 $(printf "Username|admin
 Password|ahuacate" | column -t -s "|" | indent2)
 
-Connect to the Tailscape node, IP address obtained from Tailscape, and login into Ubuntu and start the Firefox application. Navigate to the Firefox option 'Manage Bookmarks' and restore our preset bookmark file located on your desktop: 'bookmarks-ahuacate.json'. Our bookmark preset file includes all the local server URLs for Radarr, Sonarr and more.
+Connect to the Tailscale CT using a RDP client (Microsoft remote desktop connection), a tailnet IP address obtained from Tailscale App, and login into Ubuntu and start the Firefox application. Navigate to the Firefox option 'Manage Bookmarks' and restore our preset bookmark file located on your desktop: 'bookmarks-ahuacate.json'. Our bookmark preset file includes all the local server URLs for Radarr, Sonarr and more.
 
-More information about configuring Tailscale here: https://github.com/ahuacate/homelab and https://tailscale.com/kb/guides/"
+More information about configuring Tailscale, GPU accelerated Firefox and SSH here: https://github.com/ahuacate/homelab and https://tailscale.com/kb/guides/"
 echo
 #-----------------------------------------------------------------------------------

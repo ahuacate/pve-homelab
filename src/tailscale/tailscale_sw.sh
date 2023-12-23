@@ -130,7 +130,7 @@ printf 'Package: firefox\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1500\
 # Install Firefox
 apt-get install firefox -y
 # Copy Firefox bookmark preset file to CT
-cp $DIR/config/bookmarks-ahuacate.json /home/home/Desktop/bookmarks-ahuacate.json
+cp $DIR/config/bookmarks-ahuacate.json /home/admin/Desktop/bookmarks-ahuacate.json
 
 
 #---- Configure audio
