@@ -6,6 +6,8 @@ However, before you begin using Homelab, it's crucial to ensure that your networ
 
 <h2>Prerequisites</h2>
 
+Read about our <a href="https://github.com/ahuacate/common/tree/main/pve/src/local_about_our_build.md" target="_blank">system-wide requirements</a> before proceeding any further.
+
 **Network Prerequisites**
 - [x] Layer 2/3 Network Switches
 - [x] Network Gateway (*recommend xxx.xxx.1.5*)
