@@ -83,6 +83,54 @@ usermod -s /bin/bash admin
 sudo -u admin xdg-user-dirs-update
 echo "admin ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/admin
 
+# Create ~/.ssh folder
+# Create .ssh directory for the user
+sudo -u admin mkdir -p /home/admin/.ssh
+# Set correct permissions for .ssh directory
+sudo -u admin chmod 700 /home/admin/.ssh
+# Optional: Generate SSH keys for the user (uncomment if needed)
+# sudo -u admin ssh-keygen -t rsa -b 4096 -C "admin@example.com" -f /home/admin/.ssh/id_rsa -N ""
+# Ensure the correct ownership
+chown -R admin:admin /home/admin/.ssh
+# Add SSH configuration to the config file
+sudo -u admin bash -c 'cat <<EOF > /home/admin/.ssh/config
+Host pve-01
+  HostName 192.168.1.101
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-02
+  HostName 192.168.1.102
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-03
+  HostName 192.168.1.103
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-04
+  HostName 192.168.1.104
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host pve-05
+  HostName 192.168.1.105
+  User root
+  IdentityFile ~/.ssh/id_ed25519-pve
+
+Host nas-01
+  HostName nas-01.local
+  User admin
+  IdentityFile ~/.ssh/id_ed25519-pve
+EOF'
+
+# Set correct permissions for the config file
+sudo -u admin chmod 600 /home/admin/.ssh/config
+# Ensure the correct ownership of .ssh directory and contents
+chown -R admin:admin /home/admin/.ssh
+
+
 #---- Install RDP SW
 
 #  Install the desktop environment

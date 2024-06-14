@@ -109,11 +109,13 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
         - [6.3.1. Firefox bookmarks](#631-firefox-bookmarks)
         - [6.3.2. GPU accelerated Firefox](#632-gpu-accelerated-firefox)
     - [6.4. Setup your Tailscale CT for network device ssh connections](#64-setup-your-tailscale-ct-for-network-device-ssh-connections)
-- [7. UniFi Controller CT](#7-unifi-controller-ct)
+- [7. Tails OS VM](#7-tails-os-vm)
     - [7.1. Installation](#71-installation)
-    - [7.2. Setup UniFi Controller](#72-setup-unifi-controller)
-    - [7.3. UniFi Controller Toolbox](#73-unifi-controller-toolbox)
-- [8. Tails VM](#8-tails-vm)
+    - [7.2. Connect to Tails OS using VNC/RDP](#72-connect-to-tails-os-using-vncrdp)
+- [8. UniFi Controller CT](#8-unifi-controller-ct)
+    - [8.1. Installation](#81-installation)
+    - [8.2. Setup UniFi Controller](#82-setup-unifi-controller)
+    - [8.3. UniFi Controller Toolbox](#83-unifi-controller-toolbox)
 - [9. Patches and Fixes](#9-patches-and-fixes)
 
 <!-- /TOC -->
@@ -562,12 +564,13 @@ We recommend you connect and authenticate your Tailscale CT to your private tail
 
 Historically, to secure an SSH connection, you generate a keypair on the machine you are connecting from (known as the client), with the private key stored on the client, and the public key distributed to the device you want to connect to (known as the server). This lets the server authenticate communication from the client.
 
-With Tailscale, you can already connect machines in your network, and encrypt communications end-to-end from one point to another—and this includes, for example, SSHing from your work laptop to your work desktop. Tailscale also knows your identity, since that’s how you connected to your tailnet. When you enable Tailscale SSH, Tailscale claims port 22 for the Tailscale IP address (that is, only for traffic coming from your tailnet) on the devices for which you have enabled Tailscale SSH. This routes SSH traffic for the device from the Tailscale network to an SSH server run by Tailscale, instead of your standard SSH server.
+With Tailscale, you can already connect machines in your network, and encrypt communications end-to-end from one point to another—and this includes, for example, SSHing from your work laptop to your work desktop. Tailscale also knows your identity, since that’s how you connected to your Tailnet. When you enable Tailscale SSH, Tailscale claims port 22 for the Tailscale IP address (that is, only for traffic coming from your tailnet) on the devices for which you have enabled Tailscale SSH. This routes SSH traffic for the device from the Tailscale network to an SSH server run by Tailscale, instead of your standard SSH server.
 
 Connect and authenticate your Tailscale CT with SSH support:
 
 ```
-sudo tailscale up --ssh
+# sudo tailscale up --ssh
+sudo tailscale up --accept-routes=true --accept-dns=true --ssh
 ```
 
 You will be prompted with a webpage URL to authenticate and login using an authorization method. We use GMail for home use. For home users, consider disabling your Tailscale key expiry. To disable Tailscale key expiry open the 'Machines page' of the admin console webpage, select your Tailscale server and in the far right menu select the 'Disable Key Expiry' option.
@@ -613,13 +616,13 @@ ssh-copy-id -i ~/.ssh/id_ed25519-pve.pub localhost
 ssh-copy-id -i ~/.ssh/id_ed25519-pve.pub root@192.168.1.10X
 ```
 
-Copy ssh private key to your Tailscale CT (id_ed25519-pve):
+Copy ssh private key to your Tailscale CT user 'admin' (id_ed25519-pve):
 ```
 # Copy ssh private key to Tailscale CT:
 scp ~/.ssh/id_ed25519-pve admin@tailscale.local:~/.ssh/
 ```
 
-If you want to add aliases for ssh hosts in your ssh configuration file, you can do so by creating named sections with custom configuration options. These sections can be used to define aliases for remote hosts with their own settings. Here's an example of you can define aliases in your `~/.ssh/config`:
+If you want to add aliases for SSH hosts in your SSH configuration file, you can create named sections with custom configuration options. These sections allow you to define aliases for remote hosts with specific settings. Here's an example of how you can define aliases in your ~/.ssh/config (the following already exists for Tailscale user 'admin'):
 
 ```
 Host pve-01
@@ -655,31 +658,45 @@ Host nas-01
 
 Set the appropriate permissions:
 ```
-chmod 600 ~/.ssh/config
+sudo -u admin chmod 600 /home/admin/.ssh/config
 ```
 
 <hr>
 
-# 7. UniFi Controller CT
-Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+# 7. Tails OS VM
+Tails is a portable operating system that protects against surveillance and censorship. Tails uses the Tor network to protect your privacy online and help you avoid censorship.
 
 ## 7.1. Installation
 Use our Easy Script installer. Follow our Easy Script installation prompts.
 
-## 7.2. Setup UniFi Controller
+Or follow this tutorial to create a Tails VM: <a href="https://tultr.com/tutorial-how-to-install-tails-os-in-a-proxmox-vm/" target="_blank">here</a>.
+
+If you're using a VPN service, think about directing the traffic through the VPN VLAN tag within the PVE GUI.
+
+## 7.2. Connect to Tails OS using VNC/RDP
+Start Tails VM using at your PVE host WebGUI.
+
+Navigate using Proxmox web interface to `PVE host` > `Tails VM`:
+-- `Start`
+-- `Console`
+
+Tails will now start in the console window.
+
+<hr>
+
+# 8. UniFi Controller CT
+Rather than buy an UniFi Cloud Key to securely run an instance of the UniFi Controller software you can use a Proxmox LXC container to host your UniFi Controller software.
+
+## 8.1. Installation
+Use our Easy Script installer. Follow our Easy Script installation prompts.
+
+## 8.2. Setup UniFi Controller
 UniFi Controller must be assigned a static IP address. Make a DHCP IP reservation at your DHCP server or router (i.e 192.168.1.4) and restart your UniFi Controller CT.
 
 In your web browser URL type `http://unifi-controller.local:8443`. The application's WebGUI front end will appear.
 
-## 7.3. UniFi Controller Toolbox
+## 8.3. UniFi Controller Toolbox
 A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
-
-<hr>
-
-# 8. Tails VM
-Recommend this tutorial to create a Tails VM: <a href="https://tultr.com/tutorial-how-to-install-tails-os-in-a-proxmox-vm/" target="_blank">here</a>.
-
-If you're using a VPN service, think about directing the traffic through the VPN VLAN tag within the PVE GUI.
 
 <hr>
 
