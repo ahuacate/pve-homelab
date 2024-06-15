@@ -85,6 +85,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
 - [2. Pi-Hole CT](#2-pi-hole-ct)
     - [2.1. Configure Pi-Hole](#21-configure-pi-hole)
     - [2.2. Manual Conditional Forwarding entries](#22-manual-conditional-forwarding-entries)
+    - [2.3. Pi-Hole updates](#23-pi-hole-updates)
 - [3. ddclient CT](#3-ddclient-ct)
     - [3.1. Installation](#31-installation)
     - [3.2. Maintenance](#32-maintenance)
@@ -112,6 +113,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
 - [7. Tails OS VM](#7-tails-os-vm)
     - [7.1. Installation](#71-installation)
     - [7.2. Connect to Tails OS using VNC/RDP](#72-connect-to-tails-os-using-vncrdp)
+    - [7.3. Tails updates](#73-tails-updates)
 - [8. UniFi Controller CT](#8-unifi-controller-ct)
     - [8.1. Installation](#81-installation)
     - [8.2. Setup UniFi Controller](#82-setup-unifi-controller)
@@ -207,7 +209,6 @@ Our installation fully configures your Pi-Hole DNS server.
 
 In your web browser URL type `http:/pi.hole/admin` or use the static IP address `http:/<ip-address>/admin`. The application's WebGUI front end will appear. The default password is 'ahuacate'.
 
-
 ## 2.2. Manual Conditional Forwarding entries
 The User would've been prompted to configure additional Conditional Forwarding entries during the installation. If you choose to add more entries follow these instructions.
 
@@ -231,6 +232,8 @@ server=/168.192.in-addr.arpa/192.168.40.5 # LAN-vpngate-local
 
 strict-order
 ```
+## 2.3. Pi-Hole updates
+A toolbox is available to perform general maintenance, upgrades and configure add-ons. The options vary between Homelab applications and CTs. Run our Homelab Easy Script toolbox and select an application CT.
 
 <hr>
 
@@ -674,13 +677,16 @@ Or follow this tutorial to create a Tails VM: <a href="https://tultr.com/tutoria
 If you're using a VPN service, think about directing the traffic through the VPN VLAN tag within the PVE GUI.
 
 ## 7.2. Connect to Tails OS using VNC/RDP
-Start Tails VM using at your PVE host WebGUI.
+Start Tails VM using your PVE host WebGUI.
 
-Navigate using Proxmox web interface to `PVE host` > `Tails VM`:
+Navigate to `PVE host` > `Tails VM`:
 -- `Start`
 -- `Console`
 
 Tails will now start in the console window.
+
+## 7.3. Tails updates
+Our Tails VM is self-updating. After VM shutdown our Tails install will check and update if required the boot ISO to the latest version. So be patient between Tails reboots because if updating is performed the download is more than 1GB.
 
 <hr>
 
