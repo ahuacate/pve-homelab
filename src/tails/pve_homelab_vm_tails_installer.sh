@@ -233,10 +233,11 @@ VM_DRIVER="$VM_DRIVER_VAR"
 #----[VM_VGA_OPTIONS]
 # Configure the VGA Hardware. Since QEMU 2.9 the default VGA display type is 'std' for all OS types besides older Windows versions (XP and older) which use cirrus.
 # Display type: cirrus | none | qxl | qxl2 | qxl3 | qxl4 | serial0 | serial1 | serial2 | serial3 | std | virtio | virtio-gl | vmware> (default = std)
+# Note 'qxl' is letter 'l' not numeric '1'
 # Use '0' to disable, '1' to enable to enable ('<0 | 1>:<0 | string name>').
 OPTION_STATUS='1:vga'
 # Set display type to 'qx1' when using Spice.
-VM_VGA_TYPE='std'
+VM_VGA_TYPE='qxl'
 # GPU memory (MiB) (4 - 512). Sets the VGA memory (in MiB). Has no effect with serial display. 
 VM_VGA_MEMORY='32'
 

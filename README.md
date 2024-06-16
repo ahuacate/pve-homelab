@@ -112,8 +112,10 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [6.4. Setup your Tailscale CT for network device ssh connections](#64-setup-your-tailscale-ct-for-network-device-ssh-connections)
 - [7. Tails OS VM](#7-tails-os-vm)
     - [7.1. Installation](#71-installation)
-    - [7.2. Connect to Tails OS using VNC/RDP](#72-connect-to-tails-os-using-vncrdp)
-    - [7.3. Tails updates](#73-tails-updates)
+    - [7.2. Connect to Tails OS using the Proxmox console](#72-connect-to-tails-os-using-the-proxmox-console)
+    - [7.3. Connect to Tails OS using Virt-Machine-Viewer](#73-connect-to-tails-os-using-virt-machine-viewer)
+        - [7.3.1. Windows 10/11 Install](#731-windows-1011-install)
+    - [7.4. Tails updates](#74-tails-updates)
 - [8. UniFi Controller CT](#8-unifi-controller-ct)
     - [8.1. Installation](#81-installation)
     - [8.2. Setup UniFi Controller](#82-setup-unifi-controller)
@@ -667,7 +669,7 @@ sudo -u admin chmod 600 /home/admin/.ssh/config
 <hr>
 
 # 7. Tails OS VM
-Tails is a portable operating system that protects against surveillance and censorship. Tails uses the Tor network to protect your privacy online and help you avoid censorship.
+Tails is a portable operating system that protects against surveillance and censorship. Tails use the Tor network to protect your privacy online and help you avoid censorship.
 
 ## 7.1. Installation
 Use our Easy Script installer. Follow our Easy Script installation prompts.
@@ -676,16 +678,29 @@ Or follow this tutorial to create a Tails VM: <a href="https://tultr.com/tutoria
 
 If you're using a VPN service, think about directing the traffic through the VPN VLAN tag within the PVE GUI.
 
-## 7.2. Connect to Tails OS using VNC/RDP
+## 7.2. Connect to Tails OS using the Proxmox console
 Start Tails VM using your PVE host WebGUI.
 
-Navigate to `PVE host` > `Tails VM`:
+Navigate to PVE WEbGUI `PVE host` > `Tails VM`:
 -- `Start`
 -- `Console`
 
-Tails will now start in the console window.
+Boot times vary on hardware so be patient. Tails will now start in your PVE console window.
 
-## 7.3. Tails updates
+## 7.3. Connect to Tails OS using Virt-Machine-Viewer
+Read about Virt-Viewer [here](https://gitlab.com/virt-viewer/virt-viewer).
+
+### 7.3.1. Windows 10/11 Install
+You can install Virt-Viewer on your Windows machine to access your Tails VM. Our Tails installation is already set up for SPICE (virt-viewer) remote connections.
+
+1. First step is to install Virt-Viewer on your Windows machine. Navigate to Windows `cmd` prompt, run as administrator, and type the following command:
+-- `winget install virt-viewer`
+2. Navigate to PVE WebGUI `PVE host` > `Tails VM` > `Start`
+After Tails has started you can get the PVE Spice config file downloaded to your Windows machine.
+3. Navigate to PVE WebGUI `PVE host` > `Tails VM` > `_Console` > `Spice` and a Spice config file will be downloaded to your Windows machine.
+4. Open the Spice config file (i.e CQv4zBSK.vv) with Virt-Viewer. Virt-Viewer should automatically start with your Tails session.
+
+## 7.4. Tails updates
 Our Tails VM is self-updating. After VM shutdown our Tails install will check and update if required the boot ISO to the latest version. So be patient between Tails reboots because if updating is performed the download is more than 1GB.
 
 <hr>
