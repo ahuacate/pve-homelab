@@ -120,7 +120,9 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [8.1. Installation](#81-installation)
     - [8.2. Setup UniFi Controller](#82-setup-unifi-controller)
     - [8.3. UniFi Controller Toolbox](#83-unifi-controller-toolbox)
-- [9. Patches and Fixes](#9-patches-and-fixes)
+- [9. Testlab CT](#9-testlab-ct)
+    - [9.1. Add your HTTPS SSL Certificates and Keys to NGINX](#91-add-your-https-ssl-certificates-and-keys-to-nginx)
+- [10. Patches and Fixes](#10-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -721,5 +723,23 @@ A toolbox is available to perform general maintenance, upgrades and configure ad
 
 <hr>
 
-# 9. Patches and Fixes
+# 9. Testlab CT
+A Linux Debian CT for testing purposes only. Comes preinstalled with the NGINX and other SW.
+
+## 9.1. Add your HTTPS SSL Certificates and Keys to NGINX
+Paste your SSL Certificate and Keys into each respective file:
+```
+# Paste SSL key
+nano /etc/nginx/ssl/test_site.key
+# Paste SSL cert
+nano /etc/nginx/ssl/test_site.crt
+# Run nginx test
+nginx -t
+# Restart nginx
+systemctl reload nginx
+```
+
+<hr>
+
+# 10. Patches and Fixes
 

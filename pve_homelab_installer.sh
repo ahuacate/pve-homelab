@@ -40,6 +40,7 @@ vm_LIST=( "pihole:pihole:ct:DNS sinkhole with optional dhcp server"
 "syncthing:syncthing:ct:continuous file synchronization program"
 "tailscale:tailscale:ct:Zero config VPN service for remote access"
 "tails:tails:vm:Leave no trace OS"
+"testlab:testlab:ct:testlab CT with nginx and more"
 "unifi-controller:unifi-controller:ct:unifi controller" )
 
 #-----------------------------------------------------------------------------------

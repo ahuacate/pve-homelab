@@ -1,0 +1,26 @@
+server {
+    listen 80;
+    server_name your_domain.com www.your_domain.com;
+
+    root /var/www/test_site;
+    index index_port_80.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name your_domain.com www.your_domain.com;
+
+    ssl_certificate /etc/nginx/ssl/test_site.crt;
+    ssl_certificate_key /etc/nginx/ssl/test_site.key;
+
+    root /var/www/test_site;
+    index index_port_443.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
