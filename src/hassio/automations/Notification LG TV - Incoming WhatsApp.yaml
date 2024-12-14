@@ -1,0 +1,36 @@
+alias: Notification LG TV - Incoming WhatsApp
+description: LG TV notification of incoming WhatsApp call
+triggers:
+  - entity_id:
+      - sensor.sm_g950f_last_notification
+      - sensor.sm_n975f_last_notification
+      - sensor.new_phone_last_notification
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+    trigger: state
+conditions:
+  - condition: state
+    entity_id: media_player.lg_webos_smart_tv
+    state: "on"
+  - condition: template
+    value_template: |-
+      {{ trigger.entity_id in [
+          'sensor.sm_g950f_last_notification',
+          'sensor.sm_n975f_last_notification',
+          'sensor.new_phone_last_notification']
+          and state_attr(trigger.entity_id, 'package') == 'com.whatsapp'
+          and state_attr(trigger.entity_id, 'category') == 'call'
+          and 'incoming voice call' in state_attr(trigger.entity_id, 'android.text')|lower }}
+actions:
+  - repeat:
+      count: 2
+      sequence:
+        - action: notify.lg_webos_smart_tv
+          data:
+            message: Answer your WhatsApp — it’s ringing!
+            title: Incoming Call
+        - delay:
+            seconds: 5
+mode: single

@@ -120,9 +120,14 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [8.1. Installation](#81-installation)
     - [8.2. Setup UniFi Controller](#82-setup-unifi-controller)
     - [8.3. UniFi Controller Toolbox](#83-unifi-controller-toolbox)
-- [9. Testlab CT](#9-testlab-ct)
-    - [9.1. Add your HTTPS SSL Certificates and Keys to NGINX](#91-add-your-https-ssl-certificates-and-keys-to-nginx)
-- [10. Patches and Fixes](#10-patches-and-fixes)
+- [9. Home Assistant - Hassio](#9-home-assistant---hassio)
+    - [9.1. Home Assistant VM](#91-home-assistant-vm)
+    - [9.2. ZigBee2MQTT - Z2M](#92-zigbee2mqtt---z2m)
+        - [9.2.1. Raspberry Pi4 with Raspbian Stretch Lite (host OS)](#921-raspberry-pi4-with-raspbian-stretch-lite-host-os)
+        - [9.2.2. Install Zigbee2MQTT](#922-install-zigbee2mqtt)
+- [10. Testlab CT](#10-testlab-ct)
+    - [10.1. Add your HTTPS SSL Certificates and Keys to NGINX](#101-add-your-https-ssl-certificates-and-keys-to-nginx)
+- [11. Patches and Fixes](#11-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -723,10 +728,31 @@ A toolbox is available to perform general maintenance, upgrades and configure ad
 
 <hr>
 
-# 9. Testlab CT
+# 9. Home Assistant - Hassio
+Others have already conquered how to install Hassio on Proxmox.
+
+## 9.1. Home Assistant VM
+Follow these intructions: https://www.derekseaman.com/2023/10/home-assistant-proxmox-ve-8-0-quick-start-guide-2.html
+
+Selected `advanced` if you want to set a VLAN.
+
+## 9.2. ZigBee2MQTT - Z2M
+I run ZigBee2MQTT, known as Z2M, on a Pi4 as a separate network device for Home Assistant.
+
+### 9.2.1. Raspberry Pi4 with Raspbian Stretch Lite (host OS)
+Your Raspberry Pi needs an operating system to work. Raspberry Pi OS (previously called Raspbian) is the official supported operating system. Raspberry Pi Imager is the quick and easy way to install Raspberry Pi OS and other operating systems to a microSD card, ready to use with your Raspberry Pi: https://www.raspberrypi.com/software/
+
+Select Raspberry Pi OS Lite as your OS. I personally set my hostname as `z2m.local` to easily identify the host as ZigBee2MQTT.
+
+### 9.2.2. Install Zigbee2MQTT
+Follow these instructions exactly (including HA addon Mosquitto): https://www.zigbee2mqtt.io/guide/installation/01_linux.html
+
+<hr>
+
+# 10. Testlab CT
 A Linux Debian CT for testing purposes only. Comes preinstalled with the NGINX and other SW.
 
-## 9.1. Add your HTTPS SSL Certificates and Keys to NGINX
+## 10.1. Add your HTTPS SSL Certificates and Keys to NGINX
 Paste your SSL Certificate and Keys into each respective file:
 ```
 # Paste SSL key
@@ -741,5 +767,5 @@ systemctl reload nginx
 
 <hr>
 
-# 10. Patches and Fixes
+# 11. Patches and Fixes
 

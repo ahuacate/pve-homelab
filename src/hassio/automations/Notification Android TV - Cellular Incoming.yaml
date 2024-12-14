@@ -1,0 +1,40 @@
+alias: Notification Android TV - Cellular Incoming
+description: Android TV notification of incoming cellular call
+triggers:
+  - entity_id:
+      - sensor.sm_g950f_phone_state
+      - sensor.sm_n975f_phone_state
+    to: ringing
+    trigger: state
+conditions:
+  - condition: state
+    entity_id: media_player.android_tv
+    state: "on"
+actions:
+  - repeat:
+      sequence:
+        action: notify.android_tv
+        data:
+          data: null
+          title: Incoming Phone Call
+          message: >-
+            The Van Door is {% if
+            is_state('binary_sensor.i_o_linc_1f_0b_58_sensor', 'off') %}Closed{%
+            else %}Open{% endif %}! color: gray position: center duration: 5
+            fontsize: max transparency: "75%" interrupt: 1 icon:
+              url: >-
+                {% if is_state('binary_sensor.i_o_linc_1f_0b_58_sensor', 'off')
+                %} http://192.168.1.192/img/gd_closed.png {% else %}
+                http://192.168.1.192/img/gd_open.png {% endif %}
+            image:
+              path: /www/images/
+      while:
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: sensor.sm_g950f_phone_state
+              state: ringing
+            - condition: state
+              entity_id: sensor.sm_n975f_phone_state
+              state: ringing
+mode: single

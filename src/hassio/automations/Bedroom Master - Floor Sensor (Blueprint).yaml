@@ -1,0 +1,45 @@
+alias: Bedroom Master - Floor Sensor (Blueprint)
+description: ""
+use_blueprint:
+  path: Blackshome/sensor-light.yaml
+  input:
+    motion_trigger:
+      - binary_sensor.sensor_vallhorn_01_occupancy
+      - binary_sensor.sensor_vallhorn_02_occupancy
+    light_switch:
+      entity_id: light.master_bedroom_bedside_lamps
+    time_delay: 0.5
+    include_light_control:
+      - use_brightness
+    light_brightness: 80
+    include_light_colour_control: disable_colour_control
+    light_colour_temperature: 6000
+    include_bypass:
+      - bypass_enabled_turn_on
+      - bypass_enabled_turn_off
+    motion_bypass_lights_on:
+      - update.switch_rodret_01_firmware
+    motion_bypass_lights_off:
+      - update.switch_rodret_01_firmware
+    include_sun: sun_disabled
+    include_ambient: ambient_disabled
+    ambient_light_sensor: sensor.sensor_vallhorn_01_illuminance
+    ambient_light_options: ambient_light_option_enabled
+    ambient_light_value: 20
+    include_night_lights: night_lights_enabled
+    night_lights_conditions:
+      - time_enabled
+    night_lights_entity_state: []
+    night_lights_after_time: "21:00:00"
+    night_lights_before_time: "10:00:00"
+    night_time_delay: 0.1
+    include_bypass_auto_off: []
+    include_night_light_control:
+      - use_brightness
+      - use_transition
+    night_light_brightness: 10
+    include_night_light_colour_control: disable_colour_control
+    night_light_colour_temperature: 3000
+    night_lights:
+      entity_id: light.master_bedroom_bedside_lamps
+    motion_bypass_lights_stop: []

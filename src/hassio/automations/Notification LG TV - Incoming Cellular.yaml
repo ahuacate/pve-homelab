@@ -1,0 +1,31 @@
+alias: Notification LG TV - Incoming Cellular
+description: LG TV notification of incoming cellular call
+triggers:
+  - entity_id:
+      - sensor.sm_g950f_phone_state
+      - sensor.sm_n975f_phone_state
+    to: ringing
+    trigger: state
+conditions:
+  - condition: state
+    entity_id: media_player.lg_webos_smart_tv
+    state: "on"
+actions:
+  - repeat:
+      sequence:
+        - action: notify.lg_webos_smart_tv
+          data:
+            message: Answer your phone — it’s ringing!
+            title: Incoming Call
+        - delay:
+            seconds: 5
+      while:
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: sensor.sm_g950f_phone_state
+              state: ringing
+            - condition: state
+              entity_id: sensor.sm_n975f_phone_state
+              state: ringing
+mode: single

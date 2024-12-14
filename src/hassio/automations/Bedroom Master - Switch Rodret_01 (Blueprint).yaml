@@ -1,0 +1,48 @@
+alias: Bedroom Master - Switch Rodret_01 (Blueprint)
+description: Controls lights changing day/evening brightness
+use_blueprint:
+  path: damru/ikea_E2201-E2213_ZHA-Z2M_control-anything.yaml
+  input:
+    remote_device: 99bbbbbb3183264d54bf7ad35765c051
+    on_press_action:
+      - choose:
+          - conditions:
+              - condition: time
+                after: "21:00:00"
+                before: "08:00:00"
+              - condition: state
+                entity_id: light.master_bedroom_bedside_lamps
+                state: "off"
+            sequence:
+              - action: light.turn_on
+                metadata: {}
+                data:
+                  kelvin: 3000
+                  brightness_pct: 10
+                target:
+                  entity_id: light.master_bedroom_bedside_lamps
+          - conditions:
+              - condition: time
+                after: "08:00:00"
+                before: "21:00:00"
+              - condition: state
+                entity_id: light.master_bedroom_bedside_lamps
+                state: "off"
+            sequence:
+              - action: light.turn_on
+                metadata: {}
+                data:
+                  kelvin: 5000
+                  brightness_pct: 80
+                target:
+                  entity_id: light.master_bedroom_bedside_lamps
+    off_press_action:
+      - condition: state
+        entity_id: light.master_bedroom_bedside_lamps
+        state: "on"
+      - action: light.turn_off
+        metadata: {}
+        data:
+          transition: 2
+        target:
+          entity_id: light.master_bedroom_bedside_lamps

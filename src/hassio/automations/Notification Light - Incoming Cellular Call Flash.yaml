@@ -1,0 +1,94 @@
+alias: Notification Light - Incoming Cellular Call Flash
+description: Colour flash lights on incoming calls and return lights to previous state
+triggers:
+  - entity_id:
+      - sensor.sm_g950f_phone_state
+      - sensor.sm_n975f_phone_state
+    to: ringing
+    trigger: state
+conditions: []
+actions:
+  - action: scene.create
+    metadata: {}
+    data:
+      scene_id: rollback
+      snapshot_entities: >
+        {{ expand('light.incoming_call_light_flash') |
+        map(attribute='entity_id') | list }}
+  - repeat:
+      sequence:
+        - target:
+            entity_id: >
+              {{ expand('light.incoming_call_light_flash') |
+              selectattr('attributes.supported_color_modes', 'defined') |
+              selectattr('attributes.supported_color_modes', 'search',
+              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_high }}"
+            color_name: "{{ col1 }}"
+          action: light.turn_on
+        - target:
+            entity_id: >
+              {{ expand('light.incoming_call_light_flash') |
+              selectattr('attributes.supported_color_modes', 'defined') |
+              rejectattr('attributes.supported_color_modes', 'search',
+              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_high }}"
+          action: light.turn_on
+        - delay: "{{ flash_delay }}"
+        - target:
+            entity_id: >
+              {{ expand('light.incoming_call_light_flash') |
+              selectattr('attributes.supported_color_modes', 'defined') |
+              selectattr('attributes.supported_color_modes', 'search',
+              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_low }}"
+            color_name: "{{ col2 }}"
+          action: light.turn_on
+        - target:
+            entity_id: >
+              {{ expand('light.incoming_call_light_flash') |
+              selectattr('attributes.supported_color_modes', 'defined') |
+              rejectattr('attributes.supported_color_modes', 'search',
+              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_low }}"
+          action: light.turn_on
+        - delay: "{{ flash_delay }}"
+      while:
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: sensor.sm_g950f_phone_state
+              state: ringing
+            - condition: state
+              entity_id: sensor.sm_n975f_phone_state
+              state: ringing
+  - action: light.turn_on
+    metadata: {}
+    data:
+      brightness_pct: 5
+    target:
+      entity_id: light.incoming_call_light_flash
+  - delay: "00:00:02"
+  - action: scene.turn_on
+    metadata: {}
+    target:
+      entity_id: scene.rollback
+    data: {}
+  - delay: "00:00:02"
+  - action: scene.delete
+    metadata: {}
+    data: {}
+    target:
+      entity_id: scene.rollback
+variables:
+  col1: green
+  col2: white
+  brightness_high: 100
+  brightness_low: 10
+  flash_count: 10
+  flash_delay: "00:00:01"
+mode: single
