@@ -122,9 +122,11 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [8.3. UniFi Controller Toolbox](#83-unifi-controller-toolbox)
 - [9. Home Assistant - Hassio](#9-home-assistant---hassio)
     - [9.1. Home Assistant VM](#91-home-assistant-vm)
-    - [9.2. ZigBee2MQTT - Z2M](#92-zigbee2mqtt---z2m)
-        - [9.2.1. Raspberry Pi4 with Raspbian Stretch Lite (host OS)](#921-raspberry-pi4-with-raspbian-stretch-lite-host-os)
-        - [9.2.2. Install Zigbee2MQTT](#922-install-zigbee2mqtt)
+    - [9.2. Zigbee Co-Ordinator - SMLight](#92-zigbee-co-ordinator---smlight)
+    - [9.3. Telegram - Messaging services](#93-telegram---messaging-services)
+        - [9.3.1. Create a Telegram Bot](#931-create-a-telegram-bot)
+        - [9.3.2. Create a Telegram Group](#932-create-a-telegram-group)
+        - [9.3.3. Telegram integration with HA](#933-telegram-integration-with-ha)
 - [10. Testlab CT](#10-testlab-ct)
     - [10.1. Add your HTTPS SSL Certificates and Keys to NGINX](#101-add-your-https-ssl-certificates-and-keys-to-nginx)
 - [11. Patches and Fixes](#11-patches-and-fixes)
@@ -736,16 +738,66 @@ Follow these intructions: https://www.derekseaman.com/2023/10/home-assistant-pro
 
 Selected `advanced` if you want to set a VLAN.
 
-## 9.2. ZigBee2MQTT - Z2M
-I run ZigBee2MQTT, known as Z2M, on a Pi4 as a separate network device for Home Assistant.
+## 9.2. Zigbee Co-Ordinator - SMLight
+I use a SMLight [SLZB-06M](https://smlight.tech/product/slzb-06/). Highly recommend this product as it works!
 
-### 9.2.1. Raspberry Pi4 with Raspbian Stretch Lite (host OS)
-Your Raspberry Pi needs an operating system to work. Raspberry Pi OS (previously called Raspbian) is the official supported operating system. Raspberry Pi Imager is the quick and easy way to install Raspberry Pi OS and other operating systems to a microSD card, ready to use with your Raspberry Pi: https://www.raspberrypi.com/software/
+## 9.3. Telegram - Messaging services
+Telegram is one of the simplest and most powerful messaging tools for Home Assistant.
 
-Select Raspberry Pi OS Lite as your OS. I personally set my hostname as `z2m.local` to easily identify the host as ZigBee2MQTT.
 
-### 9.2.2. Install Zigbee2MQTT
-Follow these instructions exactly (including HA addon Mosquitto): https://www.zigbee2mqtt.io/guide/installation/01_linux.html
+### 9.3.1. Create a Telegram Bot
+Here you will need a Telegram account on your mobile/cell phone.
+
+A good guide on how to create your own Telegram bot: https://www.danielmartingonzalez.com/en/home-assistant-notifications-on-telegram/
+
+Whats important is you strictly follow the steps and have your Telegram user group ready.
+1. Follow the steps in the above guide to create the '/newbot'. My inputs for example are:
+-- Bot Name: `HA Ahuacate`
+-- Bot Username: `ha_ahuacatebot`
+
+Copy your Bot Name, Bot Username and HTTP API Token key ("YOUR_API_TOKEN") and store in a safe place.
+
+Stop following the guide actions once you have created the above.
+
+### 9.3.2. Create a Telegram Group
+Create a new Telegram group on your mobile or desktop Telegram App for Home Assistant to send messages to. My group naming convention is `HA - Site Group` so for example my group would be "HA - Ahuacate Group". Add your family users as group members whom you want to receive messages from your HA via this new group.
+
+Next steps are crucial and must be in order.
+
+1. Add Telegram bot to your Telegram HA group. For example, add `ha_ahuacatebot` to `HA - Site Group`.
+2. Add Telegram user `@getmyid_bot`to your Telegram HA group.
+3. Open the Telegram HA group chat window:
+-- Type `hello` or anything
+-- Copy the Current chat ID ("GROUP_CHAT_ID"): i.e `-123456789` which is your Telegram Group Chat ID. Store in safe place. Note all Group ID's begin with '-' character. If yours does not show '-' then you are in a user chat not your group chat.
+
+### 9.3.3. Telegram integration with HA
+To complete the next part you must have available:
+1. YOUR_API_TOKEN
+2. GROUP_CHAT_ID
+
+To integrate a component into Home Assistant, we need to edit the HA configuration.yaml file. You will need to enable the HA addon `File Editor`.
+1. Add the following code to your configuration.yaml inseting your credentials where specified:
+```
+telegram_bot:
+  - platform: polling
+    api_key: YOUR_API_TOKEN # obtained in the previous steps
+    allowed_chat_ids:
+      - GROUP_CHAT_ID # obtained in the previous steps
+```
+2. You must restart your HA server.
+3. Test your HA configuration by sending a test message. Go to HA web interface:
+-- Developer Tools > Actions  and select `Telegram bot: Send message`
+-- Copy & Paste the following into the terminal:
+```
+action: telegram_bot.send_message
+data:
+  message: 'I am the almighty - pray my code works'
+```
+
+You Telegram chat group should receive the message 'I am the almighty - pray my code works' sent from your HA server.
+
+
+
 
 <hr>
 
