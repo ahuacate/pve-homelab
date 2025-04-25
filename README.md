@@ -736,7 +736,7 @@ Others have already conquered how to install Hassio on Proxmox.
 ## 9.1. Home Assistant VM
 Follow these intructions: https://www.derekseaman.com/2023/10/home-assistant-proxmox-ve-8-0-quick-start-guide-2.html
 
-Selected `advanced` if you want to set a VLAN.
+Selected `advanced` if you want to set a VLAN. Remember to enable discard on your disk.
 
 ## 9.2. Zigbee Co-Ordinator - SMLight
 I use a SMLight [SLZB-06M](https://smlight.tech/product/slzb-06/). Highly recommend this product as it works!
