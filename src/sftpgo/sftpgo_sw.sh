@@ -67,6 +67,7 @@ pct_start_systemctl "sftpgo.service"
 #---- Configure firewall
 sudo ufw allow $SSH_PORT
 sudo ufw allow from $LOCAL_NET to any port $SSH_PORT
+sudo ufw allow from $LOCAL_NET to any port 8080
 # Optional additional ports
 sudo ufw allow $SFTPGO_PORT  # Allow SFTPGo
 sudo ufw default deny incoming
