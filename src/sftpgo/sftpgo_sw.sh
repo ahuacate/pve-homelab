@@ -39,38 +39,36 @@ apt-get install apt-transport-https -y
 # Run Bash Header
 source $COMMON/bash/src/basic_bash_utility.sh
 
-#---- Install sFTPGo
+# Add Repos
+apt install software-properties-common -y
+apt update -y
 add-apt-repository ppa:sftpgo/sftpgo -y
 apt update -y
+
+#---- Install sFTPGo
 apt install sftpgo -y
 
+
+
 # # Create app .service with correct user startup
-# cat <<EOF | tee /etc/systemd/system/$app.service >/dev/null
-# [Unit]
-# Description=Syncthing - BAMF Open Source File Synchronization for %I
-# Documentation=man:syncthing(1)
-# After=network.target
+pct_stop_systemctl "sftpgo.service"
+sudo chown -R $app_uid:$app_guid /etc/sftpgo /var/lib/sftpgo
+mkdir -p /etc/systemd/system/sftpgo.service.d
 
-# [Service]
-# User=$app_uid
-# ExecStart=/usr/bin/syncthing -no-browser -gui-address="0.0.0.0:8384" -no-restart -logflags=0
-# Restart=on-failure
-# SuccessExitStatus=3 4
-# RestartForceExitStatus=3 4
+sudo tee /etc/systemd/system/sftpgo.service.d/override.conf > /dev/null <<-EOF
+[Service]
+User=home
+Group=homelab
+EOF
 
-# [Install]
-# WantedBy=multi-user.target
-# EOF
-
-# # Systemd enable
-# systemctl enable $app.service
-
+systemctl daemon-reload
+pct_start_systemctl "sftpgo.service"
 
 #---- Configure firewall
 sudo ufw allow $SSH_PORT
 sudo ufw allow from $LOCAL_NET to any port $SSH_PORT
 # Optional additional ports
-sudo ufw allow sftpgo  # Allow Syncthing
+sudo ufw allow $SFTPGO_PORT  # Allow SFTPGo
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 

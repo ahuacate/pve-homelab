@@ -120,16 +120,19 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [8.1. Installation](#81-installation)
     - [8.2. Setup UniFi Controller](#82-setup-unifi-controller)
     - [8.3. UniFi Controller Toolbox](#83-unifi-controller-toolbox)
-- [9. Home Assistant - Hassio](#9-home-assistant---hassio)
-    - [9.1. Home Assistant VM](#91-home-assistant-vm)
-    - [9.2. Zigbee Co-Ordinator - SMLight](#92-zigbee-co-ordinator---smlight)
-    - [9.3. Telegram - Messaging services](#93-telegram---messaging-services)
-        - [9.3.1. Create a Telegram Bot](#931-create-a-telegram-bot)
-        - [9.3.2. Create a Telegram Group](#932-create-a-telegram-group)
-        - [9.3.3. Telegram integration with HA](#933-telegram-integration-with-ha)
-- [10. Testlab CT](#10-testlab-ct)
-    - [10.1. Add your HTTPS SSL Certificates and Keys to NGINX](#101-add-your-https-ssl-certificates-and-keys-to-nginx)
-- [11. Patches and Fixes](#11-patches-and-fixes)
+- [9. SFTPGo CT](#9-sftpgo-ct)
+    - [9.1. Installation](#91-installation)
+    - [9.2. Setup UniFi Controller](#92-setup-unifi-controller)
+- [10. Home Assistant - Hassio](#10-home-assistant---hassio)
+    - [10.1. Home Assistant VM](#101-home-assistant-vm)
+    - [10.2. Zigbee Co-Ordinator - SMLight](#102-zigbee-co-ordinator---smlight)
+    - [10.3. Telegram - Messaging services](#103-telegram---messaging-services)
+        - [10.3.1. Create a Telegram Bot](#1031-create-a-telegram-bot)
+        - [10.3.2. Create a Telegram Group](#1032-create-a-telegram-group)
+        - [10.3.3. Telegram integration with HA](#1033-telegram-integration-with-ha)
+- [11. Testlab CT](#11-testlab-ct)
+    - [11.1. Add your HTTPS SSL Certificates and Keys to NGINX](#111-add-your-https-ssl-certificates-and-keys-to-nginx)
+- [12. Patches and Fixes](#12-patches-and-fixes)
 
 <!-- /TOC -->
 <hr>
@@ -730,22 +733,35 @@ A toolbox is available to perform general maintenance, upgrades and configure ad
 
 <hr>
 
-# 9. Home Assistant - Hassio
+# 9. SFTPGo CT
+Install a FTP server for remote file transfer to home.
+
+## 9.1. Installation
+Use our Easy Script installer. Follow our Easy Script installation prompts.
+
+## 9.2. Setup UniFi Controller
+SFTPGo must be assigned a static IP address. Make a DHCP IP reservation at your DHCP server or router (i.e 192.168.1.4) and restart your SFTPGo CT.
+
+In your web browser URL type `http://sftpgo.local:8080`. The application's WebGUI front end will appear. Default SFTPGo port is 2121.
+
+<hr>
+
+# 10. Home Assistant - Hassio
 Others have already conquered how to install Hassio on Proxmox.
 
-## 9.1. Home Assistant VM
+## 10.1. Home Assistant VM
 Follow these intructions: https://www.derekseaman.com/2023/10/home-assistant-proxmox-ve-8-0-quick-start-guide-2.html
 
 Selected `advanced` if you want to set a VLAN. Remember to enable discard on your disk.
 
-## 9.2. Zigbee Co-Ordinator - SMLight
+## 10.2. Zigbee Co-Ordinator - SMLight
 I use a SMLight [SLZB-06M](https://smlight.tech/product/slzb-06/). Highly recommend this product as it works!
 
-## 9.3. Telegram - Messaging services
+## 10.3. Telegram - Messaging services
 Telegram is one of the simplest and most powerful messaging tools for Home Assistant.
 
 
-### 9.3.1. Create a Telegram Bot
+### 10.3.1. Create a Telegram Bot
 Here you will need a Telegram account on your mobile/cell phone.
 
 A good guide on how to create your own Telegram bot: https://www.danielmartingonzalez.com/en/home-assistant-notifications-on-telegram/
@@ -759,7 +775,7 @@ Copy your Bot Name, Bot Username and HTTP API Token key ("YOUR_API_TOKEN") and s
 
 Stop following the guide actions once you have created the above.
 
-### 9.3.2. Create a Telegram Group
+### 10.3.2. Create a Telegram Group
 Create a new Telegram group on your mobile or desktop Telegram App for Home Assistant to send messages to. My group naming convention is `HA - Site Group` so for example my group would be "HA - Ahuacate Group". Add your family users as group members whom you want to receive messages from your HA via this new group.
 
 Next steps are crucial and must be in order.
@@ -770,7 +786,7 @@ Next steps are crucial and must be in order.
 -- Type `hello` or anything
 -- Copy the Current chat ID ("GROUP_CHAT_ID"): i.e `-123456789` which is your Telegram Group Chat ID. Store in safe place. Note all Group ID's begin with '-' character. If yours does not show '-' then you are in a user chat not your group chat.
 
-### 9.3.3. Telegram integration with HA
+### 10.3.3. Telegram integration with HA
 To complete the next part you must have available:
 1. YOUR_API_TOKEN
 2. GROUP_CHAT_ID
@@ -801,10 +817,10 @@ You Telegram chat group should receive the message 'I am the almighty - pray my 
 
 <hr>
 
-# 10. Testlab CT
+# 11. Testlab CT
 A Linux Debian CT for testing purposes only. Comes preinstalled with the NGINX and other SW.
 
-## 10.1. Add your HTTPS SSL Certificates and Keys to NGINX
+## 11.1. Add your HTTPS SSL Certificates and Keys to NGINX
 Paste your SSL Certificate and Keys into each respective file:
 ```
 # Paste SSL key
@@ -819,5 +835,5 @@ systemctl reload nginx
 
 <hr>
 
-# 11. Patches and Fixes
+# 12. Patches and Fixes
 

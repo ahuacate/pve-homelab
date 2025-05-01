@@ -217,9 +217,9 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addhomelabuser.sh
 
 
-#---- Syncthing --------------------------------------------------------------------
+#---- SFTPGo -----------------------------------------------------------------------
 
-#---- Install Syncthing
+#---- Install SFTPGo
 section "Install sFTPGo software"
 
 # Start CT
@@ -230,8 +230,8 @@ msg "Pushing repo scripts to CT..."
 pct push $CTID $REPO_TEMP/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
 pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
 
-# Syncthing SW
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/$GIT_REPO/src/$REPO_PKG_NAME/syncthing_sw.sh"
+# SFTPGo SW
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/$GIT_REPO/src/$REPO_PKG_NAME/sftpgo_sw.sh"
 
 # Reboot the CT
 pct_stop_waitloop
@@ -243,7 +243,7 @@ section "Completion Status."
 
 #---- Set display text
 # Get port
-port=2121
+port=8080
 # Get IP type (ip -4 addr show eth0)
 if [[ $(pct exec $CTID -- ip addr show eth0 | grep dynamic) ]]; then
   ip_type='dhcp - best use dhcp IP reservation'
@@ -260,8 +260,8 @@ msg_box "SFTPGo CT installation was a success.  The first start-up may take a fe
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-We recommend you configure remote access to Syncthing using HAProxy.
+We recommend you configure remote access to SFTPGo using HAProxy. The default sFTP port is 2121.
 
-More information about configuring Syncthing here: https://github.com/ahuacate/homelab and https://docs.syncthing.net/index.html"
+More information about configuring SFTPGo here: https://github.com/ahuacate/homelab and https://docs.sftpgo.com/2.6/"
 echo
 #-----------------------------------------------------------------------------------
