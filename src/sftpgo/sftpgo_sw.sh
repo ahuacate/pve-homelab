@@ -25,7 +25,7 @@ app_guid="$APP_GRPNAME"        # App GUID
 SSH_PORT=22
 SFTPGO_PORT=2121
 # Local network
-LOCAL_NET=$(hostname -I | awk -F'.' -v OFS="." '{ print $1,$2,"0.0/24" }')
+LOCAL_NET=$(hostname -I | awk -F'.' -v OFS="." '{ print $1,$2,"0.0/16" }')
 
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
