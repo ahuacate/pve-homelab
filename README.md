@@ -122,7 +122,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-homelab/ma
     - [8.3. UniFi Controller Toolbox](#83-unifi-controller-toolbox)
 - [9. SFTPGo CT](#9-sftpgo-ct)
     - [9.1. Installation](#91-installation)
-    - [9.2. Setup UniFi Controller](#92-setup-unifi-controller)
+    - [9.2. Setup SFTPGo](#92-setup-sftpgo)
 - [10. Home Assistant - Hassio](#10-home-assistant---hassio)
     - [10.1. Home Assistant VM](#101-home-assistant-vm)
     - [10.2. Zigbee Co-Ordinator - SMLight](#102-zigbee-co-ordinator---smlight)
@@ -739,8 +739,15 @@ Install a FTP server for remote file transfer to home.
 ## 9.1. Installation
 Use our Easy Script installer. Follow our Easy Script installation prompts.
 
-## 9.2. Setup UniFi Controller
+## 9.2. Setup SFTPGo
 SFTPGo must be assigned a static IP address. Make a DHCP IP reservation at your DHCP server or router (i.e 192.168.1.4) and restart your SFTPGo CT.
+
+LAN network open ports are:
+* HTTP Web Interface 8080
+* SSH 22
+* SFTP 2022
+* FTP 2121
+* WebDAV 10080
 
 In your web browser URL type `http://sftpgo.local:8080`. The application's WebGUI front end will appear. Default SFTPGo port is 2121.
 

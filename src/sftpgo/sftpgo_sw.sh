@@ -23,7 +23,11 @@ app_guid="$APP_GRPNAME"        # App GUID
 #---- Firewall variables
 # SSH port
 SSH_PORT=22
-SFTPGO_PORT=2121
+# FTP ports
+SFTPGO_PORT=2022
+FTPGO_PORT=2121
+# WebDAV Port
+WEBDAV_PORT=10080
 # Local network
 LOCAL_NET=$(hostname -I | awk -F'.' -v OFS="." '{ print $1,$2,"0.0/16" }')
 
@@ -65,11 +69,12 @@ systemctl daemon-reload
 pct_start_systemctl "sftpgo.service"
 
 #---- Configure firewall
-sudo ufw allow $SSH_PORT
+# Restrict access to local network only and HA Proxy
 sudo ufw allow from $LOCAL_NET to any port $SSH_PORT
-sudo ufw allow from $LOCAL_NET to any port 8080
-# Optional additional ports
-sudo ufw allow $SFTPGO_PORT  # Allow SFTPGo
+sudo ufw allow from $LOCAL_NET to any port 8080  # Allow HTTP interface
+sudo ufw allow from $LOCAL_NET to any port $SFTPGO_PORT  # Allow SFTPGo
+sudo ufw allow from $LOCAL_NET to any port $FTPGO_PORT  # Allow FTPGo
+sudo ufw allow from $LOCAL_NET to any port $WEBDAV_PORT  # Allow WebDAV
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 
