@@ -1,0 +1,39 @@
+alias: Notification Light - Incoming SMS Call Flash
+description: >-
+  Colour flash lights on incoming SMS message and return lights to previous
+  state
+triggers:
+  - entity_id:
+      - sensor.sm_a715f_last_notification
+      - sensor.new_phone_last_notification
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+    trigger: state
+conditions:
+  - condition: template
+    value_template: |-
+      {{ trigger.entity_id in [
+          'sensor.sm_a715f_last_notification',
+          'sensor.new_phone_last_notification']
+          and state_attr(trigger.entity_id, 'package') in [
+            'com.android.mms',
+            'com.google.android.apps.messaging',
+            'com.samsung.android.messaging']
+          and state_attr(trigger.entity_id, 'android.text') != none
+          and 'voice call' not in state_attr(trigger.entity_id, 'android.text') | lower }}
+actions:
+  - target:
+      entity_id: script.flash_alert_lights
+    data:
+      variables:
+        light_group: light.light_group_incoming_call_flash
+        col1: yellow
+        col2: white
+        brightness_high: 80
+        brightness_low: 20
+        flash_count: 4
+        flash_delay: "00:00:02"
+    action: script.turn_on
+mode: single

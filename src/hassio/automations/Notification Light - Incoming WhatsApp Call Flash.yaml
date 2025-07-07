@@ -1,93 +1,30 @@
 alias: Notification Light - Incoming WhatsApp Call Flash
-description: >-
-  Colour flash lights on incoming WhatsApp calls and return lights to previous
-  state
+description: Flash lights on incoming WhatsApp call
 triggers:
   - entity_id:
-      - sensor.sm_g950f_last_notification
-      - sensor.sm_n975f_last_notification
+      - sensor.sm_a715f_last_notification
       - sensor.new_phone_last_notification
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
     trigger: state
 conditions:
   - condition: template
     value_template: |-
       {{ trigger.entity_id in [
-          'sensor.sm_g950f_last_notification',
-          'sensor.sm_n975f_last_notification',
-          'sensor.new_phone_last_notification']
-          and state_attr(trigger.entity_id, 'package') == 'com.whatsapp'
-          and state_attr(trigger.entity_id, 'category') == 'call'
-          and 'incoming voice call' in state_attr(trigger.entity_id, 'android.text')|lower }}
+           'sensor.sm_a715f_last_notification',
+           'sensor.new_phone_last_notification']
+         and state_attr(trigger.entity_id, 'package') == 'com.whatsapp'
+         and state_attr(trigger.entity_id, 'category') == 'call'
+         and 'incoming voice call' in state_attr(trigger.entity_id, 'android.text')|lower }}
 actions:
-  - action: scene.create
-    metadata: {}
+  - target:
+      entity_id: script.flash_alert_lights
     data:
-      scene_id: rollback
-      snapshot_entities: >
-        {{ expand('light.incoming_call_light_flash') |
-        map(attribute='entity_id') | list }}
-  - repeat:
-      count: "{{ flash_count }}"
-      sequence:
-        - target:
-            entity_id: >
-              {{ expand('light.incoming_call_light_flash') |
-              selectattr('attributes.supported_color_modes', 'defined') |
-              selectattr('attributes.supported_color_modes', 'search',
-              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
-          data:
-            brightness_pct: "{{ brightness_high }}"
-            color_name: "{{ col1 }}"
-          action: light.turn_on
-        - target:
-            entity_id: >
-              {{ expand('light.incoming_call_light_flash') |
-              selectattr('attributes.supported_color_modes', 'defined') |
-              rejectattr('attributes.supported_color_modes', 'search',
-              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
-          data:
-            brightness_pct: "{{ brightness_high }}"
-          action: light.turn_on
-        - delay: "{{ flash_delay }}"
-        - target:
-            entity_id: >
-              {{ expand('light.incoming_call_light_flash') |
-              selectattr('attributes.supported_color_modes', 'defined') |
-              selectattr('attributes.supported_color_modes', 'search',
-              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
-          data:
-            brightness_pct: "{{ brightness_low }}"
-            color_name: "{{ col2 }}"
-          action: light.turn_on
-        - target:
-            entity_id: >
-              {{ expand('light.incoming_call_light_flash') |
-              selectattr('attributes.supported_color_modes', 'defined') |
-              rejectattr('attributes.supported_color_modes', 'search',
-              'rgb|rgbw|rgbww|xy|hs') |  map(attribute='entity_id') | list }}
-          data:
-            brightness_pct: "{{ brightness_low }}"
-          action: light.turn_on
-        - delay: "{{ flash_delay }}"
-  - action: scene.turn_on
-    metadata: {}
-    target:
-      entity_id: scene.rollback
-    data: {}
-  - action: scene.delete
-    metadata: {}
-    data: {}
-    target:
-      entity_id: scene.rollback
-variables:
-  col1: green
-  col2: white
-  brightness_high: 100
-  brightness_low: 10
-  flash_count: 10
-  flash_delay: "00:00:01"
+      variables:
+        light_group: light.light_group_incoming_call_flash
+        col1: green
+        col2: white
+        brightness_high: 80
+        brightness_low: 20
+        flash_count: 4
+        flash_delay: "00:00:02"
+    action: script.turn_on
 mode: single

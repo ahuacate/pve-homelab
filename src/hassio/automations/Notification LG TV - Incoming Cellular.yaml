@@ -2,20 +2,33 @@ alias: Notification LG TV - Incoming Cellular
 description: LG TV notification of incoming cellular call
 triggers:
   - entity_id:
-      - sensor.sm_g950f_phone_state
-      - sensor.sm_n975f_phone_state
+      - sensor.sm_a715f_phone_state
+      - sensor.new_phone_phone_state
     to: ringing
     trigger: state
 conditions:
   - condition: state
-    entity_id: media_player.lg_webos_smart_tv
+    entity_id: media_player.lg_webos_tv_um7600pta
     state: "on"
+  - condition: template
+    value_template: >-
+      {% set phones = [
+        'sensor.sm_a715f_last_notification',
+        'sensor.new_phone_last_notification'
+      ] %} {% set ns = namespace(is_whatsapp_call = false) %} {% for s in phones
+      %}
+        {% if state_attr(s, 'package') == 'com.whatsapp'
+           and (state_attr(s, 'category') or '') | lower == 'call'
+           and 'incoming voice call' in ((state_attr(s, 'android.text') or '') | lower) %}
+          {% set ns.is_whatsapp_call = true %}
+        {% endif %}
+      {% endfor %} {{ not ns.is_whatsapp_call }}
 actions:
   - repeat:
       sequence:
-        - action: notify.lg_webos_smart_tv
+        - action: notify.lg_webos_tv_um7600pta
           data:
-            message: Answer your phone — it’s ringing!
+            message: Answer your cell phone — it’s ringing!
             title: Incoming Call
         - delay:
             seconds: 5
@@ -23,9 +36,6 @@ actions:
         - condition: or
           conditions:
             - condition: state
-              entity_id: sensor.sm_g950f_phone_state
-              state: ringing
-            - condition: state
-              entity_id: sensor.sm_n975f_phone_state
+              entity_id: sensor.sm_a715f_phone_state
               state: ringing
 mode: single

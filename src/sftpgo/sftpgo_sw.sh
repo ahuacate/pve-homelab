@@ -26,6 +26,7 @@ SSH_PORT=22
 # FTP ports
 SFTPGO_PORT=2022
 FTPGO_PORT=2121
+PASSIVE_PORT='50000:50100'
 # WebDAV Port
 WEBDAV_PORT=10080
 # Local network
@@ -54,7 +55,7 @@ apt install sftpgo -y
 
 
 
-# # Create app .service with correct user startup
+# Create app .service with correct user startup
 pct_stop_systemctl "sftpgo.service"
 sudo chown -R $app_uid:$app_guid /etc/sftpgo /var/lib/sftpgo
 mkdir -p /etc/systemd/system/sftpgo.service.d
@@ -65,6 +66,16 @@ User=home
 Group=homelab
 EOF
 
+# Enable FTPd
+sudo mkdir -p /etc/sftpgo/env.d
+echo "SFTPGO_FTPD__BINDINGS__0__PORT=2121" | sudo tee /etc/sftpgo/env.d/ftpd.env > /dev/null
+chown $app_uid:$app_guid /etc/sftpgo/env.d/ftpd.env
+
+# Enable WebDAV
+echo "SFTPGO_WEBDAVD__BINDINGS__0__PORT=10080" | sudo tee /etc/sftpgo/env.d/webdavd.env > /dev/null
+chown $app_uid:$app_guid /etc/sftpgo/env.d/webdavd.env
+
+# Restart/Reload SFTPGo
 systemctl daemon-reload
 pct_start_systemctl "sftpgo.service"
 
@@ -74,6 +85,7 @@ sudo ufw allow from $LOCAL_NET to any port $SSH_PORT
 sudo ufw allow from $LOCAL_NET to any port 8080  # Allow HTTP interface
 sudo ufw allow from $LOCAL_NET to any port $SFTPGO_PORT  # Allow SFTPGo
 sudo ufw allow from $LOCAL_NET to any port $FTPGO_PORT  # Allow FTPGo
+sudo ufw allow from $LOCAL_NET to any port $PASSIVE_PORT proto tcp
 sudo ufw allow from $LOCAL_NET to any port $WEBDAV_PORT  # Allow WebDAV
 sudo ufw default deny incoming
 sudo ufw default allow outgoing

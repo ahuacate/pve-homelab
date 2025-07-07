@@ -1,0 +1,37 @@
+alias: Notification LG TV - Incoming SMS
+description: LG TV notification of incoming cellular SMS
+triggers:
+  - entity_id:
+      - sensor.sm_a715f_last_notification
+      - sensor.new_phone_last_notification
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+    trigger: state
+conditions:
+  - condition: template
+    value_template: |-
+      {{ trigger.entity_id in [
+          'sensor.sm_a715f_last_notification',
+          'sensor.new_phone_last_notification']
+          and state_attr(trigger.entity_id, 'package') in [
+            'com.android.mms',
+            'com.google.android.apps.messaging',
+            'com.samsung.android.messaging']
+          and state_attr(trigger.entity_id, 'android.text') != none
+          and 'voice call' not in state_attr(trigger.entity_id, 'android.text') | lower }}
+  - condition: state
+    entity_id: media_player.lg_webos_tv_um7600pta
+    state: "on"
+actions:
+  - repeat:
+      count: 2
+      sequence:
+        - action: notify.lg_webos_tv_um7600pta
+          data:
+            message: You have received a SMS!
+            title: Incoming SMS
+        - delay:
+            seconds: 5
+mode: single

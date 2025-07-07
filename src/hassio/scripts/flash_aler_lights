@@ -1,0 +1,108 @@
+sequence:
+  - data:
+      scene_id: rollback
+      snapshot_entities: |
+        {{ expand(light_group)
+           | map(attribute='entity_id') | list }}
+    action: scene.create
+  - repeat:
+      count: "{{ flash_count }}"
+      sequence:
+        - target:
+            entity_id: |
+              {{ expand(light_group)
+                 | selectattr('attributes.supported_color_modes','defined')
+                 | selectattr('attributes.supported_color_modes','search','rgb|rgbw|rgbww|xy|hs')
+                 | map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_high }}"
+            color_name: "{{ col1 }}"
+          action: light.turn_on
+        - target:
+            entity_id: |
+              {{ expand(light_group)
+                 | selectattr('attributes.supported_color_modes','defined')
+                 | rejectattr('attributes.supported_color_modes','search','rgb|rgbw|rgbww|xy|hs')
+                 | map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_high }}"
+          action: light.turn_on
+        - delay: "{{ flash_delay }}"
+        - target:
+            entity_id: |
+              {{ expand(light_group)
+                 | selectattr('attributes.supported_color_modes','defined')
+                 | selectattr('attributes.supported_color_modes','search','rgb|rgbw|rgbww|xy|hs')
+                 | map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_low }}"
+            color_name: "{{ col2 }}"
+          action: light.turn_on
+        - target:
+            entity_id: |
+              {{ expand(light_group)
+                 | selectattr('attributes.supported_color_modes','defined')
+                 | rejectattr('attributes.supported_color_modes','search','rgb|rgbw|rgbww|xy|hs')
+                 | map(attribute='entity_id') | list }}
+          data:
+            brightness_pct: "{{ brightness_low }}"
+          action: light.turn_on
+        - delay: "{{ flash_delay }}"
+  - data:
+      entity_id: scene.rollback
+    action: scene.turn_on
+  - delay:
+      seconds: 2
+  - data:
+      entity_id: scene.rollback
+    action: scene.delete
+alias: flash_alert_lights
+description: >
+  Script flashes a selected group of lights. Restores previous light scene
+  afterwards. Runs in queued mode so commands stack up.
+mode: queued
+max: 5
+fields:
+  light_group:
+    name: Light Group (flash)
+    description: Enter the helper group of lights to flash
+    selector:
+      text: null
+  col1:
+    name: Color 1
+    description: Enter colour of first light flash
+    selector:
+      text: null
+  col2:
+    name: Color 2
+    description: Enter colour of second light flash
+    selector:
+      text: null
+  brightness_high:
+    name: High Brightness (%)
+    description: Percentage brightness for the bright flash
+    selector:
+      number:
+        min: 1
+        max: 100
+        unit_of_measurement: "%"
+  brightness_low:
+    name: Low Brightness (%)
+    description: Percentage brightness for the dim flash
+    selector:
+      number:
+        min: 1
+        max: 100
+        unit_of_measurement: "%"
+  flash_count:
+    name: Flash Count
+    description: Number of flash cycles
+    selector:
+      number:
+        min: 1
+        max: 50
+  flash_delay:
+    name: Flash Delay
+    description: Delay between flashes (HH:MM:SS)
+    selector:
+      text: null
